@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>윤오 스피너 100 — 두 가지 세 가지 같이 하는 스피너</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#fff; --ink:#1b2535; --sub:#64748b; --line:#e2e8f0;
+    --navy:#1f3a68; --hl:#ffe680; --pop:#ff6b6b; --good:#16a34a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",sans-serif;}
+  header{padding:18px 16px 12px; text-align:center}
+  h1{margin:0; font-size:26px; letter-spacing:-.5px}
+  .concl{display:inline-block; margin:10px auto 0; padding:9px 16px; border-radius:10px;
+    background:var(--hl); font-size:15px; font-weight:700; color:#5b4600; line-height:1.5}
+  .count{margin:8px 0 0; font-size:13px; color:var(--sub)}
+  nav{position:sticky; top:0; z-index:20; background:rgba(244,247,251,.96);
+    backdrop-filter:blur(6px); border-bottom:1px solid var(--line); padding:8px 10px}
+  .tabs{display:flex; gap:7px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; border:1.5px solid var(--line); background:#fff; color:var(--sub);
+    border-radius:999px; padding:8px 14px; font-size:14px; font-weight:700; cursor:pointer}
+  .tab.on{background:var(--navy); border-color:var(--navy); color:#fff}
+  main{padding:14px 12px 40px; max-width:1500px; margin:0 auto}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(146px,1fr)); gap:12px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px 9px 11px;
+    cursor:pointer; text-align:center; transition:transform .12s, box-shadow .12s}
+  .card:active{transform:scale(.96)}
+  .card:hover{box-shadow:0 6px 18px rgba(31,58,104,.13)}
+  .thumb{width:100%; aspect-ratio:1/1; display:block}
+  .nm{margin:6px 0 0; font-size:13.5px; font-weight:700; line-height:1.35; height:36px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .cb{margin:4px 0 0; font-size:11.5px; color:var(--sub); line-height:1.3; height:30px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .row{display:flex; align-items:center; justify-content:center; gap:5px; margin-top:6px}
+  .badge{font-size:11px; font-weight:800; padding:3px 7px; border-radius:7px;
+    background:#eef3fb; color:var(--navy)}
+  .badge.three{background:#ffe9e9; color:#c0392b}
+  .pr{font-size:12px; font-weight:700; color:var(--good)}
+  /* 모달 */
+  .back{position:fixed; inset:0; background:rgba(14,22,38,.62); display:none; z-index:50;
+    align-items:center; justify-content:center; padding:14px}
+  .back.on{display:flex}
+  .modal{background:#fff; border-radius:22px; width:100%; max-width:520px; max-height:94vh;
+    overflow-y:auto; padding:18px 18px 20px; text-align:center}
+  .big{width:230px; height:230px; margin:2px auto 0; display:block}
+  .tapmsg{font-size:12px; color:var(--sub); margin:2px 0 0}
+  .mtitle{margin:10px 0 0; font-size:21px; font-weight:800; line-height:1.35}
+  .mcombo{margin:9px 0 0; display:inline-block; padding:8px 14px; border-radius:11px;
+    background:var(--hl); font-size:15px; font-weight:700; color:#5b4600; line-height:1.5}
+  .info{margin:14px 0 0; text-align:left; border-top:1px solid var(--line)}
+  .info div{display:flex; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line); font-size:14px}
+  .info b{flex:0 0 72px; color:var(--sub); font-weight:700}
+  .info span{flex:1; line-height:1.45}
+  .buy{display:block; margin:16px 0 0; padding:15px; border-radius:14px; background:var(--navy);
+    color:#fff; font-size:17px; font-weight:800; text-decoration:none}
+  .buy2{display:block; margin:9px 0 0; padding:13px; border-radius:14px; background:#eef3fb;
+    color:var(--navy); font-size:15px; font-weight:700; text-decoration:none}
+  .close{display:block; width:100%; margin:9px 0 0; padding:12px; border-radius:14px;
+    border:1.5px solid var(--line); background:#fff; color:var(--sub); font-size:15px; font-weight:700; cursor:pointer}
+  .spin{animation:sp 1.15s linear infinite; transform-origin:50% 50%}
+  .spin.fast{animation-duration:.38s}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (max-width:420px){
+    h1{font-size:22px} .grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:10px}
+    .big{width:195px; height:195px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>윤오 스피너 100</h1>
+  <div class="concl">한 개로 두 가지 · 세 가지를 같이 하는 스피너 100가지</div>
+  <p class="count">그림을 누르면 돌아가고, 아래 단추로 사는 곳까지 갑니다</p>
+</header>
+<nav><div class="tabs" id="tabs"></div></nav>
+<main><div class="grid" id="grid"></div></main>
+
+<div class="back" id="back">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const ITEMS = [
+{
+"name": "LED 라이트 업 피젯 스피너 야광 핸드 스피너 (비아글로벌)",
+"combo": "스피너 + LED 발광 + 야광",
+"count": 3,
+"price": "14,500~14,700원",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/7382969449",
+"age": "8세 이상 권장, 내장 단추 전지 삼킴 주의(10세 적합)",
+"why": "돌리면 빨강·초록·노랑 불빛이 번쩍이고 불을 끄면 은은하게 빛나서 어두운 방에서 특히 멋집니다.",
+"lane": "불빛",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%97%85%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%95%BC%EA%B4%91%20%ED%95%B8%EB%93%9C%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "LED 라이트 업 피젯 스피너 야광…",
+"pshort": "14,500원~"
+},
+{
+"name": "LED 발광 키캡 스피너 5구 피젯토이 (투명·멀티컬러)",
+"combo": "스피너 + LED 발광 + 키캡 딸깍 피젯",
+"count": 3,
+"price": "6,800원 안팎",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/9502694824",
+"age": "8세 이상, 내장 전지 분리 금지(10세 적합)",
+"why": "5개 키캡을 딸깍딸깍 누르고 돌리면 불빛이 켜져서 손이 심심할 때 계속 만지게 됩니다.",
+"lane": "불빛",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EB%B0%9C%EA%B4%91%20%ED%82%A4%EC%BA%A1%20%EC%8A%A4%ED%94%BC%EB%84%88%205%EA%B5%AC%20%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4",
+"short": "LED 발광 키캡 스피너 5구 피젯…",
+"pshort": "6,800원"
+},
+{
+"name": "LED 스피너 키캡 + 초코비 과자 세트",
+"combo": "스피너 + LED 발광 키캡 + 간식 세트",
+"count": 3,
+"price": "6,900원 안팎",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=LED+스피너+키캡+초코비+세트",
+"age": "8세 이상, 과자 알레르기 확인 필요(10세 적합)",
+"why": "불빛 나는 스피너를 갖고 놀다가 과자도 먹을 수 있는 작은 선물 세트라 받는 재미가 두 배입니다.",
+"lane": "불빛",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%82%A4%EC%BA%A1%20%2B%20%EC%B4%88%EC%BD%94%EB%B9%84%20%EA%B3%BC%EC%9E%90%20%EC%84%B8%ED%8A%B8",
+"short": "LED 스피너 키캡 + 초코비 과자…",
+"pshort": "6,900원"
+},
+{
+"name": "야광 메탈 피젯스피너 K7 (보관 케이스 포함)",
+"combo": "스피너 + 야광(어둠 속 빛) + 보관 케이스",
+"count": 2,
+"price": "약 17,600원 안팎",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/9136803640",
+"age": "10세 이상 권장, 금속 80g이라 던지거나 휘두르지 않도록 주의",
+"why": "빛을 쬐면 어둠 속에서 초록빛으로 빛나고, 묵직한 금속이라 오래 부드럽게 돌아가며 케이스에 넣어 다닐 수 있습니다.",
+"lane": "불빛",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%95%BC%EA%B4%91%20%EB%A9%94%ED%83%88%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20K7",
+"short": "야광 메탈 피젯스피너 K7",
+"pshort": "17,600원"
+},
+{
+"name": "마인크래프트 크리퍼 피젯 스피너",
+"combo": "스피너 + 마인크래프트 캐릭터 + 피규어 모양",
+"count": 3,
+"price": "약 4,000~10,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=마인크래프트+피젯+스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "블록 모양 크리퍼 얼굴 스피너를 찾는 용도입니다. 해외에는 마인크래프트 스피너 제품이 확인되나 국내 판매 여부는 이번 검색으로 확인하지 못해 검색 링크로 연결했습니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A7%88%EC%9D%B8%ED%81%AC%EB%9E%98%ED%94%84%ED%8A%B8%20%ED%81%AC%EB%A6%AC%ED%8D%BC%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "마인크래프트 크리퍼 피젯 스피너",
+"pshort": "4,000원~"
+},
+{
+"name": "소닉 캐릭터 피젯 스피너",
+"combo": "스피너 + 소닉 캐릭터 + 작은 피규어 모양",
+"count": 3,
+"price": "약 4,000~10,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=소닉+피젯+스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "G마켓에는 소닉 피규어가 여러 종 판매 중이라 캐릭터 인기는 확인됩니다. 스피너 겸용은 확인하지 못해 검색 링크로 연결했습니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%86%8C%EB%8B%89%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "소닉 캐릭터 피젯 스피너",
+"pshort": "4,000원~"
+},
+{
+"name": "슈퍼마리오 캐릭터 핸드 스피너",
+"combo": "스피너 + 마리오 캐릭터 + 버섯·별 장식",
+"count": 3,
+"price": "약 4,000~12,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=슈퍼마리오+핸드스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "마리오 그림 스피너를 찾는 용도입니다. 이번 검색에서는 마리오 제품이 확인되지 않았고 검색 링크로 연결했으니 상세페이지에서 스피너 기능을 먼저 확인하세요.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%88%ED%8D%BC%EB%A7%88%EB%A6%AC%EC%98%A4%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%ED%95%B8%EB%93%9C%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "슈퍼마리오 캐릭터 핸드 스피너",
+"pshort": "4,000원~"
+},
+{
+"name": "어몽어스 캐릭터 피젯 스피너",
+"combo": "스피너 + 어몽어스 캐릭터 + 피규어 모양",
+"count": 3,
+"price": "약 4,000~9,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=어몽어스+피젯+스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "어몽어스 모양을 돌리며 노는 스피너입니다. 쿠팡 검색에서는 정확한 상품이 나오지 않아 검색 링크로 연결했으니 캐릭터 모양인지 사진으로 확인하세요.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%96%B4%EB%AA%BD%EC%96%B4%EC%8A%A4%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "어몽어스 캐릭터 피젯 스피너",
+"pshort": "4,000원~"
+},
+{
+"name": "포켓몬 몬스터볼 피젯 스피너",
+"combo": "스피너 + 포켓몬 캐릭터 + 몬스터볼 모양",
+"count": 3,
+"price": "약 4,000~10,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=포켓몬+피젯+스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "좋아하는 포켓몬 그림이 있는 스피너입니다. 검색으로 정확한 상품을 확인하지 못해 검색 결과 링크로 연결했으니 상세페이지에서 스피너 기능과 캐릭터 정품 여부를 먼저 보세요.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8F%AC%EC%BC%93%EB%AA%AC%20%EB%AA%AC%EC%8A%A4%ED%84%B0%EB%B3%BC%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "포켓몬 몬스터볼 피젯 스피너",
+"pshort": "4,000원~"
+},
+{
+"name": "포켓몬스터 LED 자석 불빛 팽이 2개 묶음 (랜덤 발송)",
+"combo": "캐릭터 팽이 + LED 불빛 + 자석 배틀",
+"count": 3,
+"price": "약 8,120원(2개 묶음)",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=포켓몬스터+LED+자석+불빛+팽이",
+"age": "8세 이상, 내장 자석·전지 분리 금지(10세 적합)",
+"why": "좋아하는 포켓몬 팽이 두 개로 친구와 한 개씩 나눠 불빛 배틀을 할 수 있습니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8F%AC%EC%BC%93%EB%AA%AC%EC%8A%A4%ED%84%B0%20LED%20%EC%9E%90%EC%84%9D%20%EB%B6%88%EB%B9%9B%20%ED%8C%BD%EC%9D%B4%202%EA%B0%9C%20%EB%AC%B6%EC%9D%8C",
+"short": "포켓몬스터 LED 자석 불빛 팽이 …",
+"pshort": "8,120원"
+},
+{
+"name": "스파이더맨 마블 핸드 스피너",
+"combo": "스피너 + 마블 히어로 캐릭터",
+"count": 2,
+"price": "약 5,000~15,000원 내외",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=스파이더맨+핸드스피너",
+"age": "8세 이상, 작은 부품 주의",
+"why": "히어로 얼굴이나 거미줄 무늬가 들어간 스피너입니다. 국내 판매 상품은 이번 검색으로 확인하지 못해 검색 링크로 연결했으니 구매 전 판매처와 상품 설명을 보세요.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%ED%8C%8C%EC%9D%B4%EB%8D%94%EB%A7%A8%20%EB%A7%88%EB%B8%94%20%ED%95%B8%EB%93%9C%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "스파이더맨 마블 핸드 스피너",
+"pshort": "5,000원~"
+},
+{
+"name": "움직이는 피젯 스피너 어몽어스 캐릭터 푸쉬팝 팝잇",
+"combo": "스피너 + 무한 뽁뽁이(푸쉬팝) + 인기 캐릭터 디자인",
+"count": 2,
+"price": "약 4,800원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/3560682884",
+"age": "8세 이상, 작은 부품 분리 여부 확인",
+"why": "아이들이 좋아하는 어몽어스 캐릭터 모양이라 가지고 놀면서 친구들에게 자랑하기 좋습니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%9B%80%EC%A7%81%EC%9D%B4%EB%8A%94%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%96%B4%EB%AA%BD%EC%96%B4%EC%8A%A4%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%ED%91%B8%EC%89%AC%ED%8C%9D%20%ED%8C%9D%EC%9E%87",
+"short": "움직이는 피젯 스피너 어몽어스 캐릭…",
+"pshort": "4,800원"
+},
+{
+"name": "피젯 스피너 퀴디치 스니치 피젯 토이 골드",
+"combo": "스피너 + 스니치 날개 캐릭터 소품",
+"count": 2,
+"price": "3,990원",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=피젯 스피너 퀴디치 스니치 피젯 토이 골드",
+"age": "8세 이상, 날개 끝 가장자리 확인",
+"why": "황금빛 날아다니는 공 모양이라 책상 위 장식으로도 멋있고, 손으로 돌리면 날개가 팔랑거리는 재미가 있습니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%80%B4%EB%94%94%EC%B9%98%20%EC%8A%A4%EB%8B%88%EC%B9%98%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4%20%EA%B3%A8%EB%93%9C",
+"short": "피젯 스피너 퀴디치 스니치 피젯 토…",
+"pshort": "3,990원"
+},
+{
+"name": "헨리포터 캐릭터 피젯 스피너",
+"combo": "스피너 + 캐릭터 디자인 장난감",
+"count": 2,
+"price": "3,990원 (쿠팡 검색 결과에서 확인)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/9179364429",
+"age": "8세 이상 권장, 날카로운 곳 없는지와 작은 부품 확인",
+"why": "캐릭터가 그려진 스피너라 가장 싸게 시작할 수 있고, 책상에서 돌리며 노는 기본형입니다. 이번 조사에서 국내 판매 가격까지 확인된 캐릭터 스피너는 이것뿐입니다.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%97%A8%EB%A6%AC%ED%8F%AC%ED%84%B0%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "헨리포터 캐릭터 피젯 스피너",
+"pshort": "3,990원"
+},
+{
+"name": "회전 피젯 기능 캐릭터 볼펜",
+"combo": "스피너(회전 피젯) + 볼펜(필기) + 캐릭터 장식",
+"count": 2,
+"price": "7,370~7,440원",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=피젯+스피너+캐릭터+볼펜",
+"age": "6세 이상 · 작은 부품 주의, 10세는 사용 무난",
+"why": "좋아하는 캐릭터 펜을 쓰면서 손으로 돌리는 재미까지 있어 필통에 넣어 다니기 좋아요.",
+"lane": "캐릭터",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%9A%8C%EC%A0%84%20%ED%94%BC%EC%A0%AF%20%EA%B8%B0%EB%8A%A5%20%EC%BA%90%EB%A6%AD%ED%84%B0%20%EB%B3%BC%ED%8E%9C",
+"short": "회전 피젯 기능 캐릭터 볼펜",
+"pshort": "7,370원~"
+},
+{
+"name": "배틀 팽이 세트 (베이블레이드 계열 팽이 + 발사기 + 배틀 경기장)",
+"combo": "스피너식 팽이 + 발사기(런처) + 배틀 경기장",
+"count": 3,
+"price": "약 15,000~19,000원 (1만원대 중후반, G마켓·옥션 기준)",
+"mall": "G마켓·옥션 (다나와 가격비교)",
+"link": "https://prod.danawa.com/list/?cate=1631152",
+"age": "다나와 표기 6세 이상, 10세 적합. 발사기 줄 당길 때 손가락 주의",
+"why": "혼자 돌리는 스피너와 달리 친구와 경기장에서 팽이를 부딪쳐 이기는 배틀 놀이로 커집니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%B0%B0%ED%8B%80%20%ED%8C%BD%EC%9D%B4%20%EC%84%B8%ED%8A%B8",
+"short": "배틀 팽이 세트",
+"pshort": "15,000원~"
+},
+{
+"name": "스파크 스피너 팽이 자석 LED 불빛 배틀 장난감",
+"combo": "스피너 팽이 + LED 불빛 + 자석 배틀",
+"count": 3,
+"price": "1,430~1,600원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/8383126959",
+"age": "8세 이상, 내장 자석·전지 분리 금지(10세 적합)",
+"why": "팽이가 돌 때 불빛이 번쩍이고 자석 힘으로 친구와 부딪치며 대결할 수 있어 값은 싸도 재미가 큽니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%ED%8C%8C%ED%81%AC%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%BD%EC%9D%B4%20%EC%9E%90%EC%84%9D%20LED%20%EB%B6%88%EB%B9%9B%20%EB%B0%B0%ED%8B%80%20%EC%9E%A5%EB%82%9C%EA%B0%90",
+"short": "스파크 스피너 팽이 자석 LED 불…",
+"pshort": "1,430원~"
+},
+{
+"name": "신상 LED 라이트 점핑 팝스 접시 팽이 모양 스피너 피젯 토이",
+"combo": "팽이형 스피너 + LED 조명 + 푸시팝 점핑",
+"count": 3,
+"price": "4,700~4,800원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/5657233805",
+"age": "권장 연령 미표기, LED용 작은 전지가 들어 있을 수 있어 전지 삼킴 주의 및 보호자 확인",
+"why": "접시 모양 팽이를 눌렀다 뒤집으면 튀어 오르고 불까지 켜져서, 친구들과 누가 더 높이 튀는지 겨루는 게임을 할 수 있어요.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8B%A0%EC%83%81%20LED%20%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%A0%90%ED%95%91%20%ED%8C%9D%EC%8A%A4%20%EC%A0%91%EC%8B%9C%20%ED%8C%BD%EC%9D%B4%20%EB%AA%A8%EC%96%91%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4",
+"short": "신상 LED 라이트 점핑 팝스 접시…",
+"pshort": "4,700원~"
+},
+{
+"name": "헬스앤프렌즈 자이로볼 1단계 LED (파워볼)",
+"combo": "자이로 팽이 + LED 불빛 + 손목 운동",
+"count": 3,
+"price": "약 10,080원 (1단계 LED 기준, 2단계 LED는 약 32,310원)",
+"mall": "다나와 가격비교 · 11번가 · G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=헬스앤프렌즈 자이로볼 1단계 LED",
+"age": "성인 운동기구로 분류된 제품이라 입문 1단계만, 줄 감는 손가락과 손목 무리에 주의하고 보호자와 함께",
+"why": "줄을 당겨 팽이처럼 공을 돌리면 불빛이 번쩍이며 손목이 윙 하고 돌아가 신기합니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%97%AC%EC%8A%A4%EC%95%A4%ED%94%84%EB%A0%8C%EC%A6%88%20%EC%9E%90%EC%9D%B4%EB%A1%9C%EB%B3%BC%201%EB%8B%A8%EA%B3%84%20LED",
+"short": "헬스앤프렌즈 자이로볼 1단계 LED",
+"pshort": "10,080원"
+},
+{
+"name": "가이아 탑건스피너 LED 스텔스 나이트 워커",
+"combo": "스피너형 팽이 + LED 불빛",
+"count": 2,
+"price": "약 3,460~4,900원 (배송비 별도 2,500~3,000원)",
+"mall": "다나와 가격비교 · G마켓",
+"link": "https://prod.danawa.com/info/?pcode=9535719",
+"age": "8세 이상 무난, 버튼 전지가 들어 있어 전지 교체는 보호자와 함께",
+"why": "돌릴 때 불빛이 번쩍여서 친구와 팽이 대결하기 좋고 값도 싸서 모아 보는 재미가 있습니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B0%80%EC%9D%B4%EC%95%84%20%ED%83%91%EA%B1%B4%EC%8A%A4%ED%94%BC%EB%84%88%20LED%20%EC%8A%A4%ED%85%94%EC%8A%A4%20%EB%82%98%EC%9D%B4%ED%8A%B8%20%EC%9B%8C%EC%BB%A4",
+"short": "가이아 탑건스피너 LED 스텔스 나…",
+"pshort": "3,460원~"
+},
+{
+"name": "가이아 탑건스피너 플레임 엔진 퓨리스톰 스피너 세트",
+"combo": "스피너형 팽이 + 발사 엔진(런처) + 대결 놀이",
+"count": 2,
+"price": "약 12,000원 (다나와 최저가, GS샵)",
+"mall": "다나와 가격비교 · GS샵",
+"link": "http://prod.danawa.com/info/?pcode=9536244",
+"age": "8세 이상 무난, 발사할 때 사람을 향하지 말 것",
+"why": "엔진에 끼워 힘껏 쏘아 돌리고 친구 팽이와 부딪쳐 이기는 대결을 할 수 있습니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B0%80%EC%9D%B4%EC%95%84%20%ED%83%91%EA%B1%B4%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%8C%EB%A0%88%EC%9E%84%20%EC%97%94%EC%A7%84%20%ED%93%A8%EB%A6%AC%EC%8A%A4%ED%86%B0%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%84%B8%ED%8A%B8",
+"short": "가이아 탑건스피너 플레임 엔진 퓨리…",
+"pshort": "12,000원"
+},
+{
+"name": "매직요요 라이팅 스핀 요요 (LED)",
+"combo": "요요 + LED 조명 (스피너처럼 빙글 도는 스핀 요요)",
+"count": 2,
+"price": "약 23,500~23,900원",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/5418297",
+"age": "8세 이상 (상품 표기)",
+"why": "위아래로 오르내릴 때 불빛이 돌아 스피너처럼 예쁘고 요요 기술도 연습할 수 있습니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A7%A4%EC%A7%81%EC%9A%94%EC%9A%94%20%EB%9D%BC%EC%9D%B4%ED%8C%85%20%EC%8A%A4%ED%95%80%20%EC%9A%94%EC%9A%94",
+"short": "매직요요 라이팅 스핀 요요",
+"pshort": "23,500원~"
+},
+{
+"name": "착시팽이스피너 5인용 (JS-39746)",
+"combo": "스피너형 팽이 + 착시 무늬 놀이 + 5명 대결",
+"count": 2,
+"price": "약 12,000원 (G마켓, 배송비 3,500원 별도)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=착시팽이스피너 5인용 JS-39746",
+"age": "8세 이상 무난, 작은 부품은 상세 설명에서 확인",
+"why": "돌리면 무늬가 번져 다른 그림으로 보이고 5명이 한꺼번에 돌려 겨룰 수 있습니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%B0%A9%EC%8B%9C%ED%8C%BD%EC%9D%B4%EC%8A%A4%ED%94%BC%EB%84%88%205%EC%9D%B8%EC%9A%A9",
+"short": "착시팽이스피너 5인용",
+"pshort": "12,000원"
+},
+{
+"name": "초이락 차징 탑스피너 라이그리스 배틀팽이",
+"combo": "스피너형 팽이 + 충전 발사 런처 + 배틀",
+"count": 2,
+"price": "약 6,170원 (단품 쿠팡 할인가) / 스타터 세트 12,000원대~38,240원",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=초이락 차징탑스피너 라이그리스 배틀팽이",
+"age": "8세 이상 무난, 발사할 때 얼굴이나 사람을 향하지 말 것",
+"why": "런처로 쏘아 돌리고 배틀판에서 친구 팽이를 튕겨 내는 대결이 인기입니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%B4%88%EC%9D%B4%EB%9D%BD%20%EC%B0%A8%EC%A7%95%20%ED%83%91%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%9D%BC%EC%9D%B4%EA%B7%B8%EB%A6%AC%EC%8A%A4%20%EB%B0%B0%ED%8B%80%ED%8C%BD%EC%9D%B4",
+"short": "초이락 차징 탑스피너 라이그리스 배…",
+"pshort": "6,170원"
+},
+{
+"name": "팽이 메탈 피젯스피너 (팽이형 핑거 스피닝 탑)",
+"combo": "스피너 + 팽이 (손가락 위에서도 바닥에서도 돌리는 겸용)",
+"count": 2,
+"price": "약 16,960~23,950원 (11번가 16,960 / 옥션 17,660 / G마켓 23,950)",
+"mall": "11번가 · 옥션 · G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=팽이 메탈 피젯스피너",
+"age": "8세 이상 무난, 자석이 들어간 제품은 고르지 말 것",
+"why": "스피너로 돌리다가 바닥에 세워 팽이처럼 오래 돌려 보는 두 가지 재미가 있습니다.",
+"lane": "팽이요요",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8C%BD%EC%9D%B4%20%EB%A9%94%ED%83%88%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "팽이 메탈 피젯스피너",
+"pshort": "16,960원~"
+},
+{
+"name": "7기능 미니 피젯큐브 집중력 스트레스 핸드큐브 퍼즐 (H-C95FF)",
+"combo": "피젯 큐브 + 스피너 + 버튼·기어·조이스틱 등 7가지 기능",
+"count": 7,
+"price": "15,260~23,470원",
+"mall": "오픈마켓 (다나와 가격비교 노출)",
+"link": "https://search.shopping.naver.com/search/all?query=7기능%20미니%20피젯큐브%20핸드큐브%20퍼즐",
+"age": "8세 이상 (작은 부품 분리 주의)",
+"why": "여섯 면마다 다른 장난이 들어 있어 손으로 돌리고 누르고 굴리며 한참 가지고 놀 수 있어요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=7%EA%B8%B0%EB%8A%A5%20%EB%AF%B8%EB%8B%88%20%ED%94%BC%EC%A0%AF%ED%81%90%EB%B8%8C%20%EC%A7%91%EC%A4%91%EB%A0%A5%20%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%20%ED%95%B8%EB%93%9C%ED%81%90%EB%B8%8C%20%ED%8D%BC%EC%A6%90",
+"short": "7기능 미니 피젯큐브 집중력 스트레…",
+"pshort": "15,260원~"
+},
+{
+"name": "자석 발광 피젯 스피너 3-in-1 인피니티 퍼즐 큐브",
+"combo": "스피너 + 인피니티 큐브 + 퍼즐 큐브 + 발광 불빛",
+"count": 4,
+"price": "18,090~18,180원",
+"mall": "G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=자석%20발광%20피젯%20스피너%203in1%20인피니티%20퍼즐%20큐브",
+"age": "8세 이상 (내장 자석이 빠지지 않는지 확인, 어린 동생 손 닿지 않게 보관)",
+"why": "스피너로도 돌리고 큐브로 접고 펴고 퍼즐 모양도 만들 수 있어서 한 개로 세 가지를 놀 수 있어요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%9E%90%EC%84%9D%20%EB%B0%9C%EA%B4%91%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%203-in-1%20%EC%9D%B8%ED%94%BC%EB%8B%88%ED%8B%B0%20%ED%8D%BC%EC%A6%90%20%ED%81%90%EB%B8%8C",
+"short": "자석 발광 피젯 스피너 3-in-1…",
+"pshort": "18,090원~"
+},
+{
+"name": "궤도 공 큐브 스트레스 감각 피젯 토이 스피너",
+"combo": "큐브 + 궤도를 도는 공 + 스피너",
+"count": 3,
+"price": "9,560~10,350원 (색상별)",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=궤도 공 큐브 스트레스 감각 피젯 토이 스피너",
+"age": "8세 이상, 공이 작아 분해하지 않기",
+"why": "작은 공이 궤도를 따라 도는 모양을 보면서 돌리는 재미가 있어, 한 개로 여러 가지를 만져보는 장난감입니다.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B6%A4%EB%8F%84%20%EA%B3%B5%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%20%EA%B0%90%EA%B0%81%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "궤도 공 큐브 스트레스 감각 피젯 …",
+"pshort": "9,560원~"
+},
+{
+"name": "메탈 인피니티 큐브 스피너 (세라믹 베어링 61g) 큐브퍼즐",
+"combo": "스피너 + 인피니티 큐브 + 큐브 퍼즐",
+"count": 3,
+"price": "18,430~20,800원",
+"mall": "11번가 / 다나와 노출 판매처",
+"link": "https://search.shopping.naver.com/search/all?query=피젯큐브%20메탈%20인피니티%20스피너%20세라믹%20베어링",
+"age": "8세 이상 (금속이라 던지지 않기, 모서리 둥근지 확인)",
+"why": "묵직한 금속 큐브가 오래 부드럽게 돌아가고 접어서 모양도 바꿀 수 있어 어른스러운 느낌이에요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A9%94%ED%83%88%20%EC%9D%B8%ED%94%BC%EB%8B%88%ED%8B%B0%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%81%90%EB%B8%8C%ED%8D%BC%EC%A6%90",
+"short": "메탈 인피니티 큐브 스피너 큐브퍼즐",
+"pshort": "18,430원~"
+},
+{
+"name": "미니 큐브 퍼즐 인피니티 손 스피너 (맞추는 법 포함)",
+"combo": "스피너 + 미니 인피니티 큐브 + 맞추기 퍼즐",
+"count": 3,
+"price": "약 2,800~2,900원 (배송비 3,000원 별도)",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=미니%20큐브%20퍼즐%20인피니티%20손%20스피너",
+"age": "8세 이상 (작은 부품이라 어린 동생 주의)",
+"why": "맞추는 법이 같이 와서 처음 해보는 아이도 따라 하기 쉽고 값이 싸서 부담이 없어요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%AF%B8%EB%8B%88%20%ED%81%90%EB%B8%8C%20%ED%8D%BC%EC%A6%90%20%EC%9D%B8%ED%94%BC%EB%8B%88%ED%8B%B0%20%EC%86%90%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "미니 큐브 퍼즐 인피니티 손 스피너",
+"pshort": "2,800원~"
+},
+{
+"name": "회전 트랙 마법의 구슬 궤도 공 인피니티 큐브 스피너 (GEEKI·유니커블 계열)",
+"combo": "스피너 + 구슬 궤도 미로 트랙 + 큐브형 피젯",
+"count": 3,
+"price": "5,600~13,700원 (판매처별, 배송비 별도 가능)",
+"mall": "쿠팡 / G마켓 / 11번가",
+"link": "https://search.shopping.naver.com/search/all?query=구슬%20궤도%20공%20큐브%20스피너",
+"age": "8세 이상 (구슬이 큐브 안에 들어 있어 분해 금지)",
+"why": "큐브를 돌리면 구슬이 트랙을 따라 굴러가서 스피너처럼 돌리는 재미와 구슬 미로 구경하는 재미가 함께 있어요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%9A%8C%EC%A0%84%20%ED%8A%B8%EB%9E%99%20%EB%A7%88%EB%B2%95%EC%9D%98%20%EA%B5%AC%EC%8A%AC%20%EA%B6%A4%EB%8F%84%20%EA%B3%B5%20%EC%9D%B8%ED%94%BC%EB%8B%88%ED%8B%B0%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "회전 트랙 마법의 구슬 궤도 공 인…",
+"pshort": "5,600원~"
+},
+{
+"name": "마법콩(매직빈) 큐브 스피너 - 몬테소리 회전 마법의 콩 큐브",
+"combo": "스피너 + 색 맞추기 퍼즐 큐브 (구슬 섞고 되맞추기)",
+"count": 2,
+"price": "10,900~11,900원",
+"mall": "11번가 / G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=마법콩%20큐브%20스피너",
+"age": "8세 이상 (작은 구슬 부품, 분해 금지)",
+"why": "가운데를 돌려 구슬을 섞고 다시 같은 색으로 맞추는 돌리기+맞추기 장난감이에요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A7%88%EB%B2%95%EC%BD%A9%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88%20-%20%EB%AA%AC%ED%85%8C%EC%86%8C%EB%A6%AC%20%ED%9A%8C%EC%A0%84%20%EB%A7%88%EB%B2%95%EC%9D%98%20%EC%BD%A9%20%ED%81%90%EB%B8%8C",
+"short": "마법콩 큐브 스피너 - 몬테소리 회…",
+"pshort": "10,900원~"
+},
+{
+"name": "치이큐브코리아 모팡지 피젯 큐브스피너 (투명)",
+"combo": "스피너 + 큐브 퍼즐 제조사 큐브 피젯",
+"count": 2,
+"price": "8,000원 (할인가)",
+"mall": "치이큐브코리아 (국내 큐브 전문몰)",
+"link": "https://search.shopping.naver.com/search/all?query=치이큐브코리아%20모팡지%20피젯%20큐브스피너",
+"age": "8세 이상",
+"why": "큐브 퍼즐 전문 회사가 만든 투명 큐브 스피너라 속이 보이고 돌릴 때 멋져서 큐브를 좋아하는 아이에게 어울려요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%B9%98%EC%9D%B4%ED%81%90%EB%B8%8C%EC%BD%94%EB%A6%AC%EC%95%84%20%EB%AA%A8%ED%8C%A1%EC%A7%80%20%ED%94%BC%EC%A0%AF%20%ED%81%90%EB%B8%8C%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "치이큐브코리아 모팡지 피젯 큐브스피너",
+"pshort": "8,000원"
+},
+{
+"name": "큐브 스피너 피젯 토이 (초등용)",
+"combo": "큐브형 몸체 + 스피너",
+"count": 2,
+"price": "2,990~3,000원",
+"mall": "11번가 (다나와 가격비교 최저가)",
+"link": "https://prod.danawa.com/info/?pcode=33040058",
+"age": "상품명에 초등학생 대상 표기, 상세 구성은 페이지에 없어 작은 부품 여부는 구매 전 확인",
+"why": "주머니에 쏙 들어가는 큐브 모양이라 가지고 다니며 돌리고, 숫자나 글자를 적어 직접 학습용으로 꾸며 볼 수 있어요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4",
+"short": "큐브 스피너 피젯 토이",
+"pshort": "2,990원~"
+},
+{
+"name": "피젯 스피너 토이 큐브 루빅피젯 (B1129)",
+"combo": "스피너 + 루빅스 큐브 모양 피젯",
+"count": 2,
+"price": "2,670~4,690원 (배송비 2,900원 별도)",
+"mall": "SSG.COM / 신세계몰 / 이마트몰 / G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=피젯%20스피너%20토이%20큐브%20루빅피젯%20B1129",
+"age": "8세 이상",
+"why": "루빅스 큐브 느낌의 작은 장난감이라 친구들한테 자랑하기 좋고 값도 아주 싸요.",
+"lane": "큐브퍼즐",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%86%A0%EC%9D%B4%20%ED%81%90%EB%B8%8C%20%EB%A3%A8%EB%B9%85%ED%94%BC%EC%A0%AF",
+"short": "피젯 스피너 토이 큐브 루빅피젯",
+"pshort": "2,670원~"
+},
+{
+"name": "3개 키링 스피너 삼각형 푸쉬팝 버블 피젯",
+"combo": "스피너 + 푸쉬팝(버블 누르기) + 키링",
+"count": 3,
+"price": "4,450원 (배송비 3,000원 별도)",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=3개 키링 스피너 삼각형 푸쉬팝 버블 피젯",
+"age": "10세 적합, 자석·배터리 없음, 키링 고리 부분 조심",
+"why": "삼각형 버블을 누르고 돌리고, 책가방에 키링으로 달아 자랑할 수 있습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=3%EA%B0%9C%20%ED%82%A4%EB%A7%81%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%82%BC%EA%B0%81%ED%98%95%20%ED%91%B8%EC%89%AC%ED%8C%9D%20%EB%B2%84%EB%B8%94%20%ED%94%BC%EC%A0%AF",
+"short": "3개 키링 스피너 삼각형 푸쉬팝 버…",
+"pshort": "4,450원"
+},
+{
+"name": "5구 스트랩 피젯 스피너 푸시팝 팝잇 휴대용 뽁뽁이",
+"combo": "스피너 + 푸시팝(버블 5개 누르기) + 스트랩",
+"count": 3,
+"price": "4,930원 (G마켓 무료배송)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=5구 스트랩 피젯 스피너 푸시팝 팝잇 휴대용 뽁뽁이",
+"age": "10세 적합, 자석·배터리 없음, 끈이 목에 감기지 않게 주의",
+"why": "버블이 다섯 개라 누를 곳이 많고 돌릴 때 손에 꽉 차서 오래 갖고 놀기 좋습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=5%EA%B5%AC%20%EC%8A%A4%ED%8A%B8%EB%9E%A9%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%91%B8%EC%8B%9C%ED%8C%9D%20%ED%8C%9D%EC%9E%87%20%ED%9C%B4%EB%8C%80%EC%9A%A9%20%EB%BD%81%EB%BD%81%EC%9D%B4",
+"short": "5구 스트랩 피젯 스피너 푸시팝 팝…",
+"pshort": "4,930원"
+},
+{
+"name": "다기능 피젯 스피너 (낱개) 팝잇 틱톡 푸시팝 스위치",
+"combo": "스피너 + 무한 뽁뽁이(푸시팝) + 딸깍 스위치",
+"count": 3,
+"price": "약 2,700원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/3717680585",
+"age": "8세 이상 권장, 작은 부품 주의",
+"why": "돌리기, 누르기, 딸깍 소리 내기까지 한 개로 즐기는 촉감 놀이 장난감입니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8B%A4%EA%B8%B0%EB%8A%A5%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%9D%EC%9E%87%20%ED%8B%B1%ED%86%A1%20%ED%91%B8%EC%8B%9C%ED%8C%9D%20%EC%8A%A4%EC%9C%84%EC%B9%98",
+"short": "다기능 피젯 스피너 팝잇 틱톡 푸시…",
+"pshort": "2,700원"
+},
+{
+"name": "무한뽁뽁이 스트랩 피젯스피너 푸쉬팝 3구 4구 (JK 3구 스트랩 푸시팝 스피너)",
+"combo": "스피너 + 푸쉬팝(버블 누르기) + 스트랩(가방 걸이)",
+"count": 3,
+"price": "1,330~1,490원 (낱개), 5개 세트 약 8,410~9,410원",
+"mall": "G마켓·옥션·SSG·롯데홈쇼핑 (배송비 2,500~3,000원 별도, 세트는 무료배송)",
+"link": "https://item.gmarket.co.kr/Item?goodscode=2096347906",
+"age": "10세 적합, 자석·배터리 없음, 끈이 목에 감기지 않게 주의",
+"why": "버블을 꾹꾹 누르다가 휙 돌릴 수 있고 가방에 걸어 다니며 놀 수 있어 값이 싸서 친구들과 나눠 갖기 좋습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%AC%B4%ED%95%9C%EB%BD%81%EB%BD%81%EC%9D%B4%20%EC%8A%A4%ED%8A%B8%EB%9E%A9%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%91%B8%EC%89%AC%ED%8C%9D%203%EA%B5%AC%204%EA%B5%AC",
+"short": "무한뽁뽁이 스트랩 피젯스피너 푸쉬팝…",
+"pshort": "1,330원~"
+},
+{
+"name": "3개 벌집 피젯토이 팝잇 푸쉬팝 손장난감 스피너 틱톡",
+"combo": "스피너 + 푸쉬팝(벌집 모양 버블 누르기)",
+"count": 2,
+"price": "4,250원 (배송비 3,000원 별도)",
+"mall": "옥션·G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=3개 벌집 피젯토이 팝잇 푸쉬팝 손장난감 스피너 틱톡",
+"age": "10세 적합, 자석·배터리 없음",
+"why": "벌집 모양이 독특해서 누르는 재미와 돌리는 재미를 한 번에 느낄 수 있습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=3%EA%B0%9C%20%EB%B2%8C%EC%A7%91%20%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4%20%ED%8C%9D%EC%9E%87%20%ED%91%B8%EC%89%AC%ED%8C%9D%20%EC%86%90%EC%9E%A5%EB%82%9C%EA%B0%90%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8B%B1%ED%86%A1",
+"short": "3개 벌집 피젯토이 팝잇 푸쉬팝 손…",
+"pshort": "4,250원"
+},
+{
+"name": "3구 푸시팝 스피너 피젯 뽁뽁이 팝잇 버블팝",
+"combo": "스피너 + 푸시팝(버블 누르기)",
+"count": 2,
+"price": "2,090~2,550원 (배송비 3,500원 별도)",
+"mall": "롯데ON·옥션·G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=3구 푸시팝 스피너 피젯 뽁뽁이 팝잇 버블팝",
+"age": "10세 적합, 자석·배터리 없음",
+"why": "버블 세 개를 번갈아 누르는 소리와 촉감이 좋고, 가운데를 잡고 돌리면 스피너로도 쓸 수 있습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=3%EA%B5%AC%20%ED%91%B8%EC%8B%9C%ED%8C%9D%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%BC%EC%A0%AF%20%EB%BD%81%EB%BD%81%EC%9D%B4%20%ED%8C%9D%EC%9E%87%20%EB%B2%84%EB%B8%94%ED%8C%9D",
+"short": "3구 푸시팝 스피너 피젯 뽁뽁이 팝…",
+"pshort": "2,090원~"
+},
+{
+"name": "UNIQBLE 회전 푸쉬팝 피젯 스피너 팝잇 뽁뽁이 키덜트 장난감",
+"combo": "스피너 + 푸쉬팝(버블 누르기)",
+"count": 2,
+"price": "6,800원 (24% 할인가)",
+"mall": "핫트랙스(교보문고)",
+"link": "https://mhottracks.kyobobook.co.kr/p/2310045879621?foo=bar&rccode=mo_detail1",
+"age": "10세 적합, 자석·배터리 없음",
+"why": "문구점 브랜드 제품이라 마감이 깔끔하고 누르는 촉감과 회전을 같이 즐길 수 있습니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=UNIQBLE%20%ED%9A%8C%EC%A0%84%20%ED%91%B8%EC%89%AC%ED%8C%9D%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%9D%EC%9E%87%20%EB%BD%81%EB%BD%81%EC%9D%B4%20%ED%82%A4%EB%8D%9C%ED%8A%B8%20%EC%9E%A5%EB%82%9C%EA%B0%90",
+"short": "UNIQBLE 회전 푸쉬팝 피젯 스…",
+"pshort": "6,800원"
+},
+{
+"name": "피젯토이 팝잇 파빗 푸쉬팝 문어 스피너 (문어푸쉬팝)",
+"combo": "스피너 + 푸쉬팝(문어 모양 버블 누르기)",
+"count": 2,
+"price": "3,220원 (정가 4,320원, 배송비 3,000원 별도)",
+"mall": "11번가 (우주패스 회원만 구매 가능)",
+"link": "https://www.11st.co.kr/products/3923345929",
+"age": "10세 적합, KC 표기는 상세페이지에서 확인",
+"why": "문어 얼굴 모양이 귀여워서 누르고 돌리는 재미에 캐릭터 인형 같은 재미가 더해집니다.",
+"lane": "팝잇",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4%20%ED%8C%9D%EC%9E%87%20%ED%8C%8C%EB%B9%97%20%ED%91%B8%EC%89%AC%ED%8C%9D%20%EB%AC%B8%EC%96%B4%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "피젯토이 팝잇 파빗 푸쉬팝 문어 스…",
+"pshort": "3,220원"
+},
+{
+"name": "과학학습 LED 자이로 피젯 스피너 팔찌 (ver.4)",
+"combo": "스피너 + LED 불빛 + 손목 팔찌 + 과학 놀이(자이로)",
+"count": 4,
+"price": "7,650~8,010원 (배송비 4,000~4,500원), 5인 세트 17,100~34,740원",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=LED%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"age": "8세 이상 권장, 단추 건전지 삼킴 주의(배터리 덮개 확인)",
+"why": "손목에 차고 돌리면 LED가 번쩍번쩍 빛나서 자이로 원리도 놀면서 배울 수 있어요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B3%BC%ED%95%99%ED%95%99%EC%8A%B5%20LED%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"short": "과학학습 LED 자이로 피젯 스피너…",
+"pshort": "7,650원~"
+},
+{
+"name": "애니멀 LED 스피너 썸머밴드 팔찌",
+"combo": "스피너 + 동물 캐릭터 + LED 불빛 + 손목밴드",
+"count": 4,
+"price": "1,370원 (배송비 3,500원)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=%EC%95%A0%EB%8B%88%EB%A9%80%20LED%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%8D%A8%EB%A8%B8%EB%B0%B4%EB%93%9C%20%ED%8C%94%EC%B0%8C",
+"age": "8세 이상, 단추 건전지 삼킴 주의",
+"why": "귀여운 동물 모양 밴드를 차고 돌리면 불빛이 반짝거려서 학교 친구들에게 선물하기도 좋아요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%95%A0%EB%8B%88%EB%A9%80%20LED%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%8D%B8%EB%A8%B8%EB%B0%B4%EB%93%9C%20%ED%8C%94%EC%B0%8C",
+"short": "애니멀 LED 스피너 썸머밴드 팔찌",
+"pshort": "1,370원"
+},
+{
+"name": "LED 발광 시계 자이로 피젯 스피너 팔찌 (시계형)",
+"combo": "스피너 + LED 불빛 + 손목시계 모양 밴드",
+"count": 3,
+"price": "10,250~12,920원 (무료배송)",
+"mall": "G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=LED%20%EB%B0%9C%EA%B4%91%20%EC%8B%9C%EA%B3%84%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"age": "8세 이상 권장, 단추 건전지 삼킴 주의",
+"why": "진짜 시계처럼 손목에 차고 돌리면 빛이 나서 친구들 앞에서 뽐내기 좋아요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EB%B0%9C%EA%B4%91%20%EC%8B%9C%EA%B3%84%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"short": "LED 발광 시계 자이로 피젯 스피…",
+"pshort": "10,250원~"
+},
+{
+"name": "반짝이 LED 피젯 스피너 팔찌",
+"combo": "스피너 + 팔찌(착용) + LED 조명",
+"count": 3,
+"price": "720원 (배송비 약 3,600원 별도)",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=LED%20피젯%20스피너%20팔찌",
+"age": "8세 이상, 버튼전지·작은 부품 주의",
+"why": "손목에 차고 다니다가 심심할 때 바로 돌릴 수 있고 불빛도 나서 친구들 사이에서 눈에 띕니다.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%B0%98%EC%A7%9D%EC%9D%B4%20LED%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"short": "반짝이 LED 피젯 스피너 팔찌",
+"pshort": "720원"
+},
+{
+"name": "사이노텍 야광 스피너 팔찌",
+"combo": "스피너 + 야광(어두운 곳에서 빛남) + 팔찌",
+"count": 3,
+"price": "1,890원 (배송비 2,500원)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=%EC%82%AC%EC%9D%B4%EB%85%B8%ED%85%8D%20%EC%95%BC%EA%B4%91%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"age": "8세 이상, 배터리 없음, 어린이 장난감이라 안전한 편",
+"why": "낮에 빛을 모아 두면 밤에 은은하게 빛나서 어두운 방에서 돌리면 신기해요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%82%AC%EC%9D%B4%EB%85%B8%ED%85%8D%20%EC%95%BC%EA%B4%91%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8C%94%EC%B0%8C",
+"short": "사이노텍 야광 스피너 팔찌",
+"pshort": "1,890원"
+},
+{
+"name": "스마트보이 써지컬스틸 사신수 회전반지 (행운반지) 피젯스피너",
+"combo": "스피너 + 패션 반지 + 행운 상징 장식",
+"count": 3,
+"price": "17,820~19,140원",
+"mall": "다나와 비교(여러 쇼핑몰)",
+"link": "https://prod.danawa.com/info/?pcode=74108465",
+"age": "10세 이상, 호수 확인 필요, 금속 알레르기 주의",
+"why": "동물 문양이 새겨진 멋진 반지가 돌아가서 모양도 예쁘고 행운 부적 느낌도 나요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%EB%A7%88%ED%8A%B8%EB%B3%B4%EC%9D%B4%20%EC%8D%A8%EC%A7%80%EC%BB%AC%EC%8A%A4%ED%8B%B8%20%EC%82%AC%EC%8B%A0%EC%88%98%20%ED%9A%8C%EC%A0%84%EB%B0%98%EC%A7%80%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "스마트보이 써지컬스틸 사신수 회전반…",
+"pshort": "17,820원~"
+},
+{
+"name": "스마트보이 써지컬스틸 회전 체인 링 피젯 스피너 반지 (우정반지)",
+"combo": "스피너 + 반지 + 친구와 나눠 끼는 우정반지",
+"count": 3,
+"price": "8,220원 내외 (다나와 최저가 기준, 몰마다 다름)",
+"mall": "다나와 비교(여러 쇼핑몰)",
+"link": "https://prod.danawa.com/info/?pcode=91005077",
+"age": "10세 이상, 호수 확인 필요, 금속 알레르기 주의",
+"why": "체인이 사르르 돌아가는 반지라 친구와 하나씩 나눠 끼면 우정반지 겸 스피너가 돼요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%EB%A7%88%ED%8A%B8%EB%B3%B4%EC%9D%B4%20%EC%8D%A8%EC%A7%80%EC%BB%AC%EC%8A%A4%ED%8B%B8%20%ED%9A%8C%EC%A0%84%20%EC%B2%B4%EC%9D%B8%20%EB%A7%81%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B0%98%EC%A7%80",
+"short": "스마트보이 써지컬스틸 회전 체인 링…",
+"pshort": "8,220원"
+},
+{
+"name": "스트레스 해소 자이로 펜던트 목걸이 금속 키 체인 EDC 피젯 스피너",
+"combo": "스피너 + 목걸이 펜던트 + 열쇠고리(키체인)",
+"count": 3,
+"price": "16,860~17,600원 (무료배송)",
+"mall": "G마켓 / 옥션",
+"link": "https://prod.danawa.com/bridge/go_link_goods.php?cate_c1=57906&cate_c2=59491&cate_c3=59507&cate_c4=0&cmpny_c=EE128&link_prod_c=4781390846&keyword=%EC%8A%A4%ED%94%BC%EB%84%88+%EB%AA%A9%EA%B1%B8%EC%9D%B4&r=17930212222419&cate=14237254",
+"age": "10세 이상, 금속 재질이라 줄이 목에 걸리지 않게 짧은 체인 확인, 가방에 달아도 됨",
+"why": "목걸이로 걸고 다니다가 손에 쥐고 돌리거나, 가방 열쇠고리로도 쓰는 일석삼조예요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%20%ED%95%B4%EC%86%8C%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%ED%8E%9C%EB%8D%98%ED%8A%B8%20%EB%AA%A9%EA%B1%B8%EC%9D%B4%20%EA%B8%88%EC%86%8D%20%ED%82%A4%20%EC%B2%B4%EC%9D%B8%20EDC%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "스트레스 해소 자이로 펜던트 목걸이…",
+"pshort": "16,860원~"
+},
+{
+"name": "피젯 링 3종 세트 회전 반지",
+"combo": "스피너 + 반지 + 여러 개 세트(골라 끼기)",
+"count": 3,
+"price": "10,720~11,320원 (무료배송)",
+"mall": "G마켓 / 11번가",
+"link": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%20%EB%A7%81%203%EC%A2%85%20%EC%84%B8%ED%8A%B8%20%ED%9A%8C%EC%A0%84%20%EB%B0%98%EC%A7%80",
+"age": "10세 이상, 성인 호수일 수 있어 손가락 맞춰 보기",
+"why": "세 가지 모양을 기분 따라 바꿔 끼고 돌릴 수 있고, 친구랑 하나씩 나눌 수도 있어요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%20%EB%A7%81%203%EC%A2%85%20%EC%84%B8%ED%8A%B8%20%ED%9A%8C%EC%A0%84%20%EB%B0%98%EC%A7%80",
+"short": "피젯 링 3종 세트 회전 반지",
+"pshort": "10,720원~"
+},
+{
+"name": "패션 피젯 링 (나비 디자인) 회전 반지",
+"combo": "스피너 + 나비 장식 패션 반지",
+"count": 2,
+"price": "16,610원 내외",
+"mall": "G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%20%EB%A7%81%20%EB%82%98%EB%B9%84",
+"age": "10세 이상, 호수 확인, 금속 알레르기 주의",
+"why": "반짝이는 나비 모양이 달린 반지라 예쁘게 하고 다니면서 돌리는 재미까지 있어요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8C%A8%EC%85%98%20%ED%94%BC%EC%A0%AF%20%EB%A7%81%20%ED%9A%8C%EC%A0%84%20%EB%B0%98%EC%A7%80",
+"short": "패션 피젯 링 회전 반지",
+"pshort": "16,610원"
+},
+{
+"name": "피젯링 링스피너 반지 스트레스해소 피젯토이 B1178-O",
+"combo": "스피너 + 반지 액세서리",
+"count": 2,
+"price": "4,990원 (배송비 2,900원, 49,900원 이상 무료)",
+"mall": "핫트랙스",
+"link": "https://hottracks.kyobobook.co.kr/gift/detail/S000216670723",
+"age": "10세 이상, 반지 호수 확인(큰 호수는 엄지에), 금속 알레르기 주의",
+"why": "손가락에 끼고 가운데 링을 빙글빙글 돌리면 조용히 손장난할 수 있고, 평소엔 그냥 멋진 반지로 낄 수 있어요.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%BC%EC%A0%AF%EB%A7%81%20%EB%A7%81%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B0%98%EC%A7%80%20%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%ED%95%B4%EC%86%8C%20%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4",
+"short": "피젯링 링스피너 반지 스트레스해소 …",
+"pshort": "4,990원"
+},
+{
+"name": "회전 링 피젯 핑거 스피너 반지",
+"combo": "스피너 + 손가락 반지 + 스트레스 해소",
+"count": 2,
+"price": "약 3,000~8,000원",
+"mall": "네이버쇼핑",
+"link": "https://search.shopping.naver.com/search/all?query=핑거 스피너 링 피젯 반지",
+"age": "10세 이상, 손가락 크기 맞는지 확인",
+"why": "손가락에 끼고 다니다 심심할 때 돌릴 수 있어서 따로 들고 다닐 필요가 없고, 잃어버리기도 어렵습니다.",
+"lane": "반지팔찌",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%9A%8C%EC%A0%84%20%EB%A7%81%20%ED%94%BC%EC%A0%AF%20%ED%95%91%EA%B1%B0%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B0%98%EC%A7%80",
+"short": "회전 링 피젯 핑거 스피너 반지",
+"pshort": "3,000원~"
+},
+{
+"name": "LED 12구 키캡 볼 딸깍이 키링",
+"combo": "회전 피젯 볼 + 키링 + 딸깍 클릭 + LED 조명",
+"count": 4,
+"price": "7,720~12,330원",
+"mall": "G마켓 / 11번가 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=LED%2012구%20키캡%20볼%20딸깍이%20키링",
+"age": "8세 이상, 버튼전지 삼킴 주의",
+"why": "공 모양을 돌리면서 열두 군데를 딸깍 눌러 보는 재미가 있고 어두운 곳에서 빛이 납니다.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=LED%2012%EA%B5%AC%20%ED%82%A4%EC%BA%A1%20%EB%B3%BC%20%EB%94%B8%EA%B9%8D%EC%9D%B4%20%ED%82%A4%EB%A7%81",
+"short": "LED 12구 키캡 볼 딸깍이 키링",
+"pshort": "7,720원~"
+},
+{
+"name": "LED 스피너 키캡 키링 5구 (딸깍이 키링)",
+"combo": "스피너 + 키링 + 키캡 딸깍 소리 + LED 조명",
+"count": 4,
+"price": "4,370~8,920원",
+"mall": "11번가 / G마켓 / 쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=LED%20스피너%20키캡%20키링%205구",
+"age": "8세 이상, 버튼전지 삼킴 주의",
+"why": "가방에 달아 두고 딸깍딸깍 누르고 돌리면 불빛이 켜져서 친구들에게 자랑하기 좋습니다.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%82%A4%EC%BA%A1%20%ED%82%A4%EB%A7%81%205%EA%B5%AC",
+"short": "LED 스피너 키캡 키링 5구",
+"pshort": "4,370원~"
+},
+{
+"name": "GEEKI 메탈 큐브 스피너 키체인형 피젯",
+"combo": "스피너 + 금속 큐브 피젯 + 키링",
+"count": 3,
+"price": "5,890~16,700원 (옵션별)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/8274651990",
+"age": "8세 이상, 금속 모서리라 던지지 않기",
+"why": "금속 큐브를 손가락으로 돌리고 굴리는 묵직한 손맛이 있고, 열쇠고리로 책가방에 달고 다닐 수 있습니다.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=GEEKI%20%EB%A9%94%ED%83%88%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%82%A4%EC%B2%B4%EC%9D%B8%ED%98%95%20%ED%94%BC%EC%A0%AF",
+"short": "GEEKI 메탈 큐브 스피너 키체인…",
+"pshort": "5,890원~"
+},
+{
+"name": "GEEKI 스피너 피젯 손 장난감 변형 체인 완구",
+"combo": "체인 변형 피젯 + 핸드 스피너 + 키링",
+"count": 3,
+"price": "5,570원 내외",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=GEEKI 스피너 피젯 변형 체인",
+"age": "8세 이상, 체인 틈에 손가락·머리카락 끼임 주의",
+"why": "체인 모양이 접히고 펴지며 변신하고 손가락 위에서 돌릴 수도 있어, 가방에 달아 두고 쉬는 시간에 만지작거리기 좋습니다.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=GEEKI%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%BC%EC%A0%AF%20%EC%86%90%20%EC%9E%A5%EB%82%9C%EA%B0%90%20%EB%B3%80%ED%98%95%20%EC%B2%B4%EC%9D%B8%20%EC%99%84%EA%B5%AC",
+"short": "GEEKI 스피너 피젯 손 장난감 …",
+"pshort": "5,570원"
+},
+{
+"name": "메탈 피젯 스피너 키링 (360도 회전식 병따개 포함)",
+"combo": "스피너 + 병따개 + 열쇠고리(키링)",
+"count": 3,
+"price": "약 30,000원대",
+"mall": "옥션",
+"link": "https://search.shopping.naver.com/search/all?query=병따개+피젯+스피너+키링+메탈",
+"age": "8세 이상 권장 · 금속 모서리 주의 · 병따개는 어른과 함께 사용",
+"why": "가방에 달고 손끝으로 돌리다가 병뚜껑까지 딸 수 있어서 놀이와 실용이 한꺼번에 되는 열쇠고리예요.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A9%94%ED%83%88%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%82%A4%EB%A7%81",
+"short": "메탈 피젯 스피너 키링",
+"pshort": "30,000원"
+},
+{
+"name": "컬러 카라비너 가방키링 연결고리 + 스피너 키링 조합",
+"combo": "카라비너 가방걸이 + 스피너",
+"count": 2,
+"price": "약 5,900~6,500원 (카라비너 개당 약 300원 + 스피너 약 5,570원)",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=컬러 카라비너 가방키링 연결고리",
+"age": "8세 이상, 카라비너 스프링 손가락 끼임 주의",
+"why": "스피너를 카라비너에 걸어 가방 지퍼나 필통에 척 달 수 있어서 떼고 붙이기가 쉽고, 색을 골라 맞출 수 있습니다.",
+"lane": "열쇠고리",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%BB%AC%EB%9F%AC%20%EC%B9%B4%EB%9D%BC%EB%B9%84%EB%84%88%20%EA%B0%80%EB%B0%A9%ED%82%A4%EB%A7%81%20%EC%97%B0%EA%B2%B0%EA%B3%A0%EB%A6%AC%20%2B%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%82%A4%EB%A7%81%20%EC%A1%B0%ED%95%A9",
+"short": "컬러 카라비너 가방키링 연결고리 +…",
+"pshort": "5,900원~"
+},
+{
+"name": "4 in 1 피젯스피너 볼펜 터치펜 LED램프 (Coms 등)",
+"combo": "스피너 + 볼펜 + 태블릿 터치펜 + LED 램프",
+"count": 4,
+"price": "4,280~11,200원 (일부 배송비 3,000원 별도)",
+"mall": "쿠팡 / G마켓 / 11번가(핫트랙스) / GS샵",
+"link": "https://search.shopping.naver.com/search/all?query=4+in+1+피젯스피너+볼펜+터치펜+LED램프",
+"age": "8세 이상 권장, 단추전지 교체는 어른이 (삼킴 주의), 판매처에 따라 14세 이상 표기도 있어 상세페이지 확인",
+"why": "펜 위쪽을 손가락으로 돌리며 놀고, 불도 켜고, 태블릿도 터치할 수 있어서 한 개로 네 가지를 하는 일석사조예요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=4%20in%201%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B3%BC%ED%8E%9C%20%ED%84%B0%EC%B9%98%ED%8E%9C%20LED%EB%9E%A8%ED%94%84",
+"short": "4 in 1 피젯스피너 볼펜 터치펜…",
+"pshort": "4,280원~"
+},
+{
+"name": "LED 경량 피젯 스피너 펜 금속 감압 볼펜",
+"combo": "스피너 + 클릭식(감압) 볼펜 + LED",
+"count": 3,
+"price": "13,510~14,110원 (무료배송 표기)",
+"mall": "G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=LED+경량+피젯+스피너+펜+금속+감압+볼펜",
+"age": "10세 이상, 금속 재질 주의, 단추전지 어른 확인",
+"why": "누르면 나오는 볼펜으로 쓰다가 빙글 돌리며 놀 수 있는 가벼운 금속 펜이에요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EA%B2%BD%EB%9F%89%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8E%9C%20%EA%B8%88%EC%86%8D%20%EA%B0%90%EC%95%95%20%EB%B3%BC%ED%8E%9C",
+"short": "LED 경량 피젯 스피너 펜 금속 …",
+"pshort": "13,510원~"
+},
+{
+"name": "신기한볼펜 CJ750 LED 피젯스피너 볼펜",
+"combo": "스피너 + 볼펜 + LED 불빛",
+"count": 3,
+"price": "약 5,291원 (무료배송 표기)",
+"mall": "다나와 가격비교 연결 쇼핑몰",
+"link": "https://search.shopping.naver.com/search/all?query=신기한볼펜+CJ750+LED+피젯스피너+볼펜",
+"age": "8세 이상, 단추전지 삼킴 주의",
+"why": "5천 원대로 부담이 적고 불빛이 반짝여서 선물용으로 가볍게 고르기 좋아요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8B%A0%EA%B8%B0%ED%95%9C%EB%B3%BC%ED%8E%9C%20LED%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B3%BC%ED%8E%9C",
+"short": "신기한볼펜 LED 피젯스피너 볼펜",
+"pshort": "5,291원"
+},
+{
+"name": "자이로스코프 펜 스피너 LED 금속 볼펜",
+"combo": "자이로 스피너 + LED 불빛 + 볼펜",
+"count": 3,
+"price": "12,310~12,840원 (무료배송 표기)",
+"mall": "G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=자이로스코프+펜+스피너+LED+볼펜",
+"age": "10세 이상 무난, 금속 재질이라 던지거나 휘두르지 않도록 주의, 단추전지 어른 확인",
+"why": "묵직한 금속 느낌으로 돌리는 손맛이 좋고, 불빛까지 나와서 친구들에게 자랑하기 좋아요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%9E%90%EC%9D%B4%EB%A1%9C%EC%8A%A4%EC%BD%94%ED%94%84%20%ED%8E%9C%20%EC%8A%A4%ED%94%BC%EB%84%88%20LED%20%EA%B8%88%EC%86%8D%20%EB%B3%BC%ED%8E%9C",
+"short": "자이로스코프 펜 스피너 LED 금속…",
+"pshort": "12,310원~"
+},
+{
+"name": "플레이팡 피젯 스피너 라이트펜",
+"combo": "스피너 + 라이트펜(LED 불빛) + 볼펜",
+"count": 3,
+"price": "약 5,900원",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=플레이팡+피젯+스피너+라이트펜",
+"age": "8세 이상, 단추전지 삼킴 주의",
+"why": "어두운 곳에서 불이 들어와 이불 속 놀이나 필기 모두 재미있게 쓸 수 있어요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%8C%EB%A0%88%EC%9D%B4%ED%8C%A1%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%9D%BC%EC%9D%B4%ED%8A%B8%ED%8E%9C",
+"short": "플레이팡 피젯 스피너 라이트펜",
+"pshort": "5,900원"
+},
+{
+"name": "회전 LED 볼펜 펜돌리기 집중력 스피너 펜",
+"combo": "펜돌리기(스피닝) + LED 불빛 + 필기 볼펜",
+"count": 3,
+"price": "약 4,580원",
+"mall": "11번가",
+"link": "http://m.11st.co.kr/products/ma/6395329472?trTypeCd=MAS101&trCtgrNo=950076&checkCtlgPrd=false",
+"age": "8세 이상, 배터리 교체는 어른과 함께",
+"why": "펜 돌리기 연습을 하면 불빛이 빙글 그려져서 펜 묘기를 배우는 재미가 커요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%9A%8C%EC%A0%84%20LED%20%EB%B3%BC%ED%8E%9C%20%ED%8E%9C%EB%8F%8C%EB%A6%AC%EA%B8%B0%20%EC%A7%91%EC%A4%91%EB%A0%A5%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%8E%9C",
+"short": "회전 LED 볼펜 펜돌리기 집중력 …",
+"pshort": "4,580원"
+},
+{
+"name": "젤리펜 펜돌리기 전용 볼펜 연습 스틱",
+"combo": "펜돌리기 연습 스틱 + 젤리 그립 필기펜",
+"count": 2,
+"price": "3,460~9,410원 (배송비 포함, 판매처 42곳 가격비교)",
+"mall": "11번가 가격비교 (신세계몰 등)",
+"link": "https://catalog.11st.co.kr/pc/437895019?sortCds=DLV_INCLUDE&poc=pc",
+"age": "8세 이상, 배터리·자석 없음",
+"why": "말랑한 젤리 느낌의 펜이라 손에 착 감기고 돌리는 연습이 쉬워요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%A0%A4%EB%A6%AC%ED%8E%9C%20%ED%8E%9C%EB%8F%8C%EB%A6%AC%EA%B8%B0%20%EC%A0%84%EC%9A%A9%20%EB%B3%BC%ED%8E%9C%20%EC%97%B0%EC%8A%B5%20%EC%8A%A4%ED%8B%B1",
+"short": "젤리펜 펜돌리기 전용 볼펜 연습 스틱",
+"pshort": "3,460원~"
+},
+{
+"name": "펜돌리기 펜 입문용 회전 스틱 볼펜 (블랙/화이트)",
+"combo": "펜돌리기 연습 스틱 + 볼펜",
+"count": 2,
+"price": "약 4,610원 (무료배송 표기)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/9216421186",
+"age": "8세 이상, 배터리·자석 없음",
+"why": "그립감이 좋은 초보용이라 윤오가 펜돌리기 첫 기술을 배우기에 부담이 없어요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8E%9C%EB%8F%8C%EB%A6%AC%EA%B8%B0%20%ED%8E%9C%20%EC%9E%85%EB%AC%B8%EC%9A%A9%20%ED%9A%8C%EC%A0%84%20%EC%8A%A4%ED%8B%B1%20%EB%B3%BC%ED%8E%9C",
+"short": "펜돌리기 펜 입문용 회전 스틱 볼펜",
+"pshort": "4,610원"
+},
+{
+"name": "펜돌리기 필기가능 회전볼펜 기본 스피닝펜 (룽스)",
+"combo": "펜돌리기 연습펜 + 실제 필기 볼펜",
+"count": 2,
+"price": "6,710~7,060원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/9439497545",
+"age": "8세 이상, 배터리·자석 없는 일반 펜 형태",
+"why": "균형이 잡혀 있어 돌리기 연습도 되고 학교에서 그대로 필기도 할 수 있어요.",
+"lane": "펜필기",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8E%9C%EB%8F%8C%EB%A6%AC%EA%B8%B0%20%ED%95%84%EA%B8%B0%EA%B0%80%EB%8A%A5%20%ED%9A%8C%EC%A0%84%EB%B3%BC%ED%8E%9C%20%EA%B8%B0%EB%B3%B8%20%EC%8A%A4%ED%94%BC%EB%8B%9D%ED%8E%9C",
+"short": "펜돌리기 필기가능 회전볼펜 기본 스…",
+"pshort": "6,710원~"
+},
+{
+"name": "LED 플라잉 스피너 (부메랑 UFO 피젯 스피너)",
+"combo": "날리기 + 스피너 + LED 조명 + USB 충전",
+"count": 4,
+"price": "약 3만원대부터",
+"mall": "G마켓",
+"link": "https://www.gmarket.co.kr/n/search?keyword=%ED%94%8C%EB%9D%BC%EC%9E%89%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88",
+"age": "10세 이상, 사람 얼굴 방향으로 날리지 않기, 실내 유리·조명 주의, 해외배송 표기 확인",
+"why": "USB로 충전해서 날리면 UFO처럼 불빛을 내며 돌아와서 마당이나 체육관에서 놀기 좋습니다.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%ED%94%8C%EB%9D%BC%EC%9E%89%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "LED 플라잉 스피너",
+"pshort": "약 3만원대부터"
+},
+{
+"name": "던지면 돌아오는 플라잉 스피너 부메랑 드론 (플라잉 프로)",
+"combo": "스피너 + 던지면 돌아오는 부메랑 + 미니 비행 드론",
+"count": 3,
+"price": "약 17,020~21,470원 (같은 종류 G마켓 기준)",
+"mall": "11번가 · G마켓",
+"link": "https://www.11st.co.kr/products/4635451579",
+"age": "10세 무난, 회전하는 물건이라 얼굴 가까이 날리지 말 것, 충전 배터리 KC 표시 확인",
+"why": "던지면 빙글 돌며 날아갔다가 손으로 돌아오는 스피너라 밖에서 친구와 놀기 좋습니다.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8D%98%EC%A7%80%EB%A9%B4%20%EB%8F%8C%EC%95%84%EC%98%A4%EB%8A%94%20%ED%94%8C%EB%9D%BC%EC%9E%89%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%B6%80%EB%A9%94%EB%9E%91%20%EB%93%9C%EB%A1%A0",
+"short": "던지면 돌아오는 플라잉 스피너 부메…",
+"pshort": "17,020원~"
+},
+{
+"name": "데이비드토이 스피닝스타 LED 어린이 센서 드론",
+"combo": "스피너형 회전 구 + 손동작 비행 드론 + LED 조명",
+"count": 3,
+"price": "약 41,000~59,000원 (G마켓 41,200~49,600원, 다나와 최저 58,850원, 쿠팡 58,530원)",
+"mall": "다나와 가격비교 (쿠팡·G마켓 판매)",
+"link": "https://prod.danawa.com/info/?pcode=99752528",
+"age": "다나와 표기 만3세 이상, 10세 가능. 충전 배터리 제품이라 얼굴 가까이 날리지 않기",
+"why": "손바닥을 대면 따라 움직이며 빙글빙글 돌고 LED가 반짝여서, 손가락 스피너보다 훨씬 큰 놀이가 됩니다. 이번에 찾은 것 중 가장 비싼 편이니 가격은 구매 전에 다시 확인하세요.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8D%B0%EC%9D%B4%EB%B9%84%EB%93%9C%ED%86%A0%EC%9D%B4%20%EC%8A%A4%ED%94%BC%EB%8B%9D%EC%8A%A4%ED%83%80%20LED%20%EC%96%B4%EB%A6%B0%EC%9D%B4%20%EC%84%BC%EC%84%9C%20%EB%93%9C%EB%A1%A0",
+"short": "데이비드토이 스피닝스타 LED 어린…",
+"pshort": "41,000원~"
+},
+{
+"name": "팔찌 프로펠로 피젯토이 (슈팅 팔찌)",
+"combo": "회전 프로펠러 + 발사 놀이 + 손목 팔찌",
+"count": 3,
+"price": "1,790~2,100원 (배송비 별도 가능)",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=%ED%8C%94%EC%B0%8C%20%ED%94%84%EB%A1%9C%ED%8E%A0%EB%A1%9C%20%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4",
+"age": "8세 이상, 얼굴·눈 쪽으로 날리지 않기, 어른 보호 아래 놀기",
+"why": "손목에서 프로펠러를 휙 날려 빙글빙글 도는 걸 보는 재미가 있어요.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%8C%94%EC%B0%8C%20%ED%94%84%EB%A1%9C%ED%8E%A0%EB%A1%9C%20%ED%94%BC%EC%A0%AF%ED%86%A0%EC%9D%B4",
+"short": "팔찌 프로펠로 피젯토이",
+"pshort": "1,790원~"
+},
+{
+"name": "플라이볼 UFO LED 플라잉 스피너 (플라이노바 계열)",
+"combo": "스피너 + 손으로 띄우는 비행 호버볼 + LED 불빛",
+"count": 3,
+"price": "약 29,990원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/7692512878?deliveryType=01&redirectedRequestYn=N&redirectedOptionYn=N&pathType=NA",
+"age": "10세 무난, 충전식이라 KC 표시와 국내배송 표기 확인, 얼굴 가까이 날리지 말 것",
+"why": "손을 대면 공중에 떠서 반짝이며 도는 UFO라 보는 것만으로도 신기합니다.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%ED%94%8C%EB%9D%BC%EC%9D%B4%EB%B3%BC%20UFO%20LED%20%ED%94%8C%EB%9D%BC%EC%9E%89%20%EC%8A%A4%ED%94%BC%EB%84%88",
+"short": "플라이볼 UFO LED 플라잉 스피너",
+"pshort": "29,990원"
+},
+{
+"name": "다다랜드 어린이 드론 입문용 플라이노바 프로 + 매직스틱 세트",
+"combo": "날아다니는 스피너형 비행 구 + 매직스틱 조종",
+"count": 2,
+"price": "약 44,230원 (쿠팡 표시가)",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=플라이노바+프로+매직스틱",
+"age": "10세 가능. 프로펠러가 빠르게 돌아 손가락·얼굴 가까이 날리지 않기, 어른이 처음에 같이 하기",
+"why": "손에서 띄우면 스스로 떠올라 돌고, 매직스틱으로 방향을 조종하는 마법 같은 놀이라 스피너를 좋아하는 아이가 신기해합니다. 상품 직접 주소는 못 찾아 쇼핑 검색 주소를 넣었습니다.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8B%A4%EB%8B%A4%EB%9E%9C%EB%93%9C%20%EC%96%B4%EB%A6%B0%EC%9D%B4%20%EB%93%9C%EB%A1%A0%20%EC%9E%85%EB%AC%B8%EC%9A%A9%20%ED%94%8C%EB%9D%BC%EC%9D%B4%EB%85%B8%EB%B0%94%20%ED%94%84%EB%A1%9C%20%2B%20%EB%A7%A4%EC%A7%81%EC%8A%A4%ED%8B%B1%20%EC%84%B8%ED%8A%B8",
+"short": "다다랜드 어린이 드론 입문용 플라이…",
+"pshort": "44,230원"
+},
+{
+"name": "스마일 플라잉볼 손으로 조종하는 재미있는 드론 RC 캐치볼 대용",
+"combo": "플라잉볼(회전 비행 스피너형) + 캐치볼 놀이",
+"count": 2,
+"price": "약 5,500원 (검색 표시값)",
+"mall": "옥션",
+"link": "http://mitem.auction.co.kr/vip?itemNo=E741560898",
+"age": "10세 가능 수준의 소형 비행볼. 눈·얼굴 가까이 날리지 않기, 상세페이지 연령 표기 확인",
+"why": "가장 저렴하게 시작할 수 있는 날아다니는 스피너형이고, 손으로 띄우고 받는 캐치볼처럼 몸을 움직이며 놉니다.",
+"lane": "날아가는것",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%8A%A4%EB%A7%88%EC%9D%BC%20%ED%94%8C%EB%9D%BC%EC%9E%89%EB%B3%BC%20%EC%86%90%EC%9C%BC%EB%A1%9C%20%EC%A1%B0%EC%A2%85%ED%95%98%EB%8A%94%20%EC%9E%AC%EB%AF%B8%EC%9E%88%EB%8A%94%20%EB%93%9C%EB%A1%A0%20RC%20%EC%BA%90%EC%B9%98%EB%B3%BC%20%EB%8C%80%EC%9A%A9",
+"short": "스마일 플라잉볼 손으로 조종하는 재…",
+"pshort": "5,500원"
+},
+{
+"name": "당근칼 스피너 H-144 토이 카람빗 접이식 장난감칼 틱톡나이프 스트레스 해소",
+"combo": "스피너 + 접이식 플리퍼 + 스트레스 해소 핸드토이",
+"count": 3,
+"price": "3,560~3,570원 (11번가·G마켓·옥션 비슷, 배송비 2,500원 별도)",
+"mall": "11번가 / G마켓 / 옥션",
+"link": "https://search.shopping.naver.com/search/all?query=당근칼 스피너 H-144 접이식 카람빗 장난감칼",
+"age": "날 없는 장난감 계열, 상세페이지의 KC·연령 표기 확인 후 구매",
+"why": "가격이 싸고 스피너 돌리기와 접었다 펴기를 한 번에 즐겨서 부담 없이 시작하기 좋아요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8B%B9%EA%B7%BC%EC%B9%BC%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%86%A0%EC%9D%B4%20%EC%B9%B4%EB%9E%8C%EB%B9%97%20%EC%A0%91%EC%9D%B4%EC%8B%9D%20%EC%9E%A5%EB%82%9C%EA%B0%90%EC%B9%BC%20%ED%8B%B1%ED%86%A1%EB%82%98%EC%9D%B4%ED%94%84%20%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%20%ED%95%B4%EC%86%8C",
+"short": "당근칼 스피너 토이 카람빗 접이식 …",
+"pshort": "3,560원~"
+},
+{
+"name": "어크로스더씨 발리송 빗 나이프 요루의 빗 버터플라이",
+"combo": "버터플라이 플리퍼 연습 + 빗 + 게임 캐릭터 소품",
+"count": 3,
+"price": "약 11,000원 내외",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/7201368818",
+"age": "날 없는 빗 형태이나 금속 모서리·손 끼임 주의, 보호자와 함께 사용",
+"why": "좋아하는 게임 캐릭터의 빗을 손에서 휙휙 돌리는 느낌을 낼 수 있어요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%96%B4%ED%81%AC%EB%A1%9C%EC%8A%A4%EB%8D%94%EC%94%A8%20%EB%B0%9C%EB%A6%AC%EC%86%A1%20%EB%B9%97%20%EB%82%98%EC%9D%B4%ED%94%84%20%EC%9A%94%EB%A3%A8%EC%9D%98%20%EB%B9%97%20%EB%B2%84%ED%84%B0%ED%94%8C%EB%9D%BC%EC%9D%B4",
+"short": "어크로스더씨 발리송 빗 나이프 요루…",
+"pshort": "11,000원"
+},
+{
+"name": "날없는 연습용 버터플라이 나이프 2p 세트",
+"combo": "버터플라이 연습용 플리퍼 + 친구와 나눠 쓰는 2개 세트",
+"count": 2,
+"price": "13,560원 (2개입)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=날없는 연습용 버터플라이 나이프 2p",
+"age": "날 없는 연습용, 상세페이지의 재질·KC·연령 표기 확인",
+"why": "2개가 한 세트라 친구와 하나씩 나눠 같이 연습하며 놀 수 있어요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%82%A0%EC%97%86%EB%8A%94%20%EC%97%B0%EC%8A%B5%EC%9A%A9%20%EB%B2%84%ED%84%B0%ED%94%8C%EB%9D%BC%EC%9D%B4%20%EB%82%98%EC%9D%B4%ED%94%84%202p%20%EC%84%B8%ED%8A%B8",
+"short": "날없는 연습용 버터플라이 나이프 2…",
+"pshort": "13,560원"
+},
+{
+"name": "당근 칼 3개 세트 (접이식 피젯 장난감)",
+"combo": "접이식 플리퍼 + 핸드 스피닝 피젯 3개 세트",
+"count": 2,
+"price": "개당 약 3,500원 (세트 총액은 상세페이지 확인)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/7662918528",
+"age": "날 없는 플라스틱 장난감, 상세페이지의 KC·연령 표기 확인 후 구매",
+"why": "3개가 한 세트라 친구·가족과 나눠 갖고 누가 더 멋지게 돌리나 겨루기 좋아요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%8B%B9%EA%B7%BC%20%EC%B9%BC%203%EA%B0%9C%20%EC%84%B8%ED%8A%B8",
+"short": "당근 칼 3개 세트",
+"pshort": "3,500원"
+},
+{
+"name": "발리송 나비칼 연습용 나이프 버터플라이 접이식 플라스틱 날없는 안전칼날",
+"combo": "버터플라이 연습용 플리퍼 + 스트레스 해소 핸드토이",
+"count": 2,
+"price": "약 10,700원 (옵션별 상이)",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/6577887141",
+"age": "날 없는 플라스틱 안전칼날 표기, 상세페이지의 연령 표기 확인",
+"why": "플라스틱이라 떨어뜨려도 덜 아프고, 한 손 돌리기 기술을 안전하게 연습할 수 있어요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%B0%9C%EB%A6%AC%EC%86%A1%20%EB%82%98%EB%B9%84%EC%B9%BC%20%EC%97%B0%EC%8A%B5%EC%9A%A9%20%EB%82%98%EC%9D%B4%ED%94%84%20%EB%B2%84%ED%84%B0%ED%94%8C%EB%9D%BC%EC%9D%B4%20%EC%A0%91%EC%9D%B4%EC%8B%9D%20%ED%94%8C%EB%9D%BC%EC%8A%A4%ED%8B%B1%20%EB%82%A0%EC%97%86%EB%8A%94%20%EC%95%88%EC%A0%84%EC%B9%BC%EB%82%A0",
+"short": "발리송 나비칼 연습용 나이프 버터플…",
+"pshort": "10,700원"
+},
+{
+"name": "발리송 빗 csgo 쿠크리 버터플라이 나비칼 나이프 연습용 날없는",
+"combo": "버터플라이 연습용 플리퍼 + 빗",
+"count": 2,
+"price": "약 13,000원 (할인모음가, 색상 옵션별 상이)",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/6697005335",
+"age": "날 없는 빗 형태이나 금속 모서리·손 끼임 주의, 보호자와 함께 사용",
+"why": "게임에서 보던 버터플라이 동작을 안전하게 흉내 내 보고 실제로 머리도 빗을 수 있어요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%B0%9C%EB%A6%AC%EC%86%A1%20%EB%B9%97%20csgo%20%EC%BF%A0%ED%81%AC%EB%A6%AC%20%EB%B2%84%ED%84%B0%ED%94%8C%EB%9D%BC%EC%9D%B4%20%EB%82%98%EB%B9%84%EC%B9%BC%20%EB%82%98%EC%9D%B4%ED%94%84%20%EC%97%B0%EC%8A%B5%EC%9A%A9%20%EB%82%A0%EC%97%86%EB%8A%94",
+"short": "발리송 빗 csgo 쿠크리 버터플라…",
+"pshort": "13,000원"
+},
+{
+"name": "재밌는 3D 피젯 스피너 당근칼 16종 장난감 발리송 토이나이프 핸드토이",
+"combo": "스피너 + 접이식 플리퍼(날 없는 당근칼형 장난감)",
+"count": 2,
+"price": "1,500~3,000원 (배송비 별도, 재고는 상세페이지에서 확인)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/7826019230",
+"age": "날 없는 플라스틱 장난감, 상세페이지의 KC·연령 표기 확인 후 구매",
+"why": "손목으로 휙 펼치고 접으며 돌리는 기술을 연습해서 친구들에게 보여줄 수 있어요.",
+"lane": "플리퍼",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%9E%AC%EB%B0%8C%EB%8A%94%203D%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%8B%B9%EA%B7%BC%EC%B9%BC%2016%EC%A2%85%20%EC%9E%A5%EB%82%9C%EA%B0%90%20%EB%B0%9C%EB%A6%AC%EC%86%A1%20%ED%86%A0%EC%9D%B4%EB%82%98%EC%9D%B4%ED%94%84%20%ED%95%B8%EB%93%9C%ED%86%A0%EC%9D%B4",
+"short": "재밌는 3D 피젯 스피너 당근칼 1…",
+"pshort": "1,500원~"
+},
+{
+"name": "3D 마그네틱 우주 자석 큐브 스피너 창의력 퍼즐 (피젯토이)",
+"combo": "스피너처럼 돌리기 + 자석 변신 큐브 + 모양 퍼즐",
+"count": 3,
+"price": "2,900~5,900원 (배송비 3,000원 별도 가능)",
+"mall": "쿠팡 / G마켓 / 11번가",
+"link": "https://search.shopping.naver.com/search/all?query=3D%20마그네틱%20우주%20자석%20큐브%20스피너%20퍼즐",
+"age": "8세 이상 (자석 내장, 어린 동생 손 닿지 않게 보관)",
+"why": "값이 싸고 색이 여러 가지라 모양을 바꾸며 돌리고 접는 재미가 있어 부담 없이 사 주기 좋아요.",
+"lane": "자석",
+"search": "https://search.shopping.naver.com/search/all?query=3D%20%EB%A7%88%EA%B7%B8%EB%84%A4%ED%8B%B1%20%EC%9A%B0%EC%A3%BC%20%EC%9E%90%EC%84%9D%20%ED%81%90%EB%B8%8C%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EC%B0%BD%EC%9D%98%EB%A0%A5%20%ED%8D%BC%EC%A6%90",
+"short": "3D 마그네틱 우주 자석 큐브 스피…",
+"pshort": "2,900원~"
+},
+{
+"name": "고급 메탈 라이트닝 야광 푸시 피젯 슬라이더 스피너 회전 큐브",
+"combo": "스피너 + 푸시 슬라이더(딸깍 촉감) + 야광",
+"count": 3,
+"price": "약 12,730원",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=고급 메탈 라이트닝 야광 푸시 피젯 슬라이더 스피너 회전 큐브",
+"age": "10세 이상 가능, 금속이라 무거워 던지거나 모서리에 부딪히지 않게 주의",
+"why": "묵직한 금속 느낌으로 돌리고 밀어 딸깍 소리를 내고, 어두운 곳에서는 야광이 보여 고학년이 좋아할 만합니다.",
+"lane": "자석",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B3%A0%EA%B8%89%20%EB%A9%94%ED%83%88%20%EB%9D%BC%EC%9D%B4%ED%8A%B8%EB%8B%9D%20%EC%95%BC%EA%B4%91%20%ED%91%B8%EC%8B%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%8D%94%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%9A%8C%EC%A0%84%20%ED%81%90%EB%B8%8C",
+"short": "고급 메탈 라이트닝 야광 푸시 피젯…",
+"pshort": "12,730원"
+},
+{
+"name": "에기르 유니커블 메탈 감압 마그네틱 푸시 슬라이더 퍼즐 큐브 피젯 토이 핸드 스피너",
+"combo": "마그네틱 푸시 슬라이더 + 퍼즐 큐브 + 핸드 스피너 (상품명 표기 기능)",
+"count": 3,
+"price": "9,100~10,110원",
+"mall": "오픈마켓 (다나와 가격비교 노출, 수입사 에기르)",
+"link": "https://search.shopping.naver.com/search/all?query=에기르%20유니커블%20마그네틱%20푸시%20슬라이더%20퍼즐%20큐브",
+"age": "8세 이상 (자석 내장, 금속 모서리 확인)",
+"why": "밀고 당길 때 철컥 하는 자석 손맛이 좋아서 책상에서 조용히 만지작거리기 좋아요.",
+"lane": "자석",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%97%90%EA%B8%B0%EB%A5%B4%20%EC%9C%A0%EB%8B%88%EC%BB%A4%EB%B8%94%20%EB%A9%94%ED%83%88%20%EA%B0%90%EC%95%95%20%EB%A7%88%EA%B7%B8%EB%84%A4%ED%8B%B1%20%ED%91%B8%EC%8B%9C%20%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%8D%94%20%ED%8D%BC%EC%A6%90%20%ED%81%90%EB%B8%8C%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4%20",
+"short": "에기르 유니커블 메탈 감압 마그네틱…",
+"pshort": "9,100원~"
+},
+{
+"name": "메탈 마그네틱 푸시 카드 슬라이더 무한 피젯 스피너 핑거 토이 (모델 sps350)",
+"combo": "스피너 + 자석 푸시 슬라이더(밀면 딸깍 붙는 마그네틱)",
+"count": 2,
+"price": "15,490~15,800원 (색상 옐로우·블루·실버·블랙)",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/6968802143",
+"age": "10세 가능. 금속 슬라이더라 손가락 끼임만 주의, 페이지에 연령·KC 표기 없음",
+"why": "자석이 붙었다 떨어지는 손맛으로 밀고 당기며 놀 수 있고 스피너 이름이 붙은 금속 핑거 토이라 책상에서 계속 만지기 좋습니다.",
+"lane": "자석",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A9%94%ED%83%88%20%EB%A7%88%EA%B7%B8%EB%84%A4%ED%8B%B1%20%ED%91%B8%EC%8B%9C%20%EC%B9%B4%EB%93%9C%20%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%8D%94%20%EB%AC%B4%ED%95%9C%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%95%91%EA%B1%B0%20%ED%86%A0%EC%9D%B4",
+"short": "메탈 마그네틱 푸시 카드 슬라이더 …",
+"pshort": "15,490원~"
+},
+{
+"name": "알약형 자석 부상 EDC 메탈 핸드스피너 감압 토이 (건메탈 블랙)",
+"combo": "스피너 + 자석 부상(마그네틱) 방식 + 손끝 감압 장난감",
+"count": 2,
+"price": "26,780원 (정가 29,900원, 무료배송)",
+"mall": "쿠팡",
+"link": "https://www.coupang.com/vp/products/9656389072",
+"age": "10세 가능. 금속 제품이며 연령·KC 표기는 검색으로 확인하지 못했으니 구매 전 상세페이지 확인",
+"why": "알약 모양 금속 몸체가 자석 힘으로 떠 있는 듯 돌아가는 방식이라 보는 재미와 손으로 만지작거리는 재미가 함께 있습니다.",
+"lane": "자석",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%95%8C%EC%95%BD%ED%98%95%20%EC%9E%90%EC%84%9D%20%EB%B6%80%EC%83%81%20EDC%20%EB%A9%94%ED%83%88%20%ED%95%B8%EB%93%9C%EC%8A%A4%ED%94%BC%EB%84%88%20%EA%B0%90%EC%95%95%20%ED%86%A0%EC%9D%B4",
+"short": "알약형 자석 부상 EDC 메탈 핸드…",
+"pshort": "26,780원"
+},
+{
+"name": "게임 돌림판(5인용) 학습 교구 룰렛 만들기 놀이",
+"combo": "돌림판(룰렛) + 학습 교구 + 직접 만들기 놀이",
+"count": 3,
+"price": "10,800원",
+"mall": "옥션 (11번가에도 같은 상품, 11번가는 우주패스 회원 전용 표시)",
+"link": "http://itempage3.auction.co.kr/DetailView.aspx?itemno=B479663728",
+"age": "초등 학습교구 분류, 어린이제품 인증 표시 있음 (정확한 연령은 상세설명에서 확인)",
+"why": "돌림판을 직접 만들어 숫자나 구구단 문제를 적고 돌리면, 가족과 퀴즈 놀이와 순서 정하기를 같이 할 수 있어요.",
+"lane": "돌림판공부",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B2%8C%EC%9E%84%20%EB%8F%8C%EB%A6%BC%ED%8C%90%20%ED%95%99%EC%8A%B5%20%EA%B5%90%EA%B5%AC%20%EB%A3%B0%EB%A0%9B%20%EB%A7%8C%EB%93%A4%EA%B8%B0%20%EB%86%80%EC%9D%B4",
+"short": "게임 돌림판 학습 교구 룰렛 만들기…",
+"pshort": "10,800원"
+},
+{
+"name": "곱셈 구구단 보드 암기 99단 숫자 룰렛 판",
+"combo": "숫자 룰렛(돌림판) + 구구단 보드 + 암기 학습",
+"count": 3,
+"price": "약 10,000~20,000원 (소형 학습용 룰렛 판매가 기준, 상품별 확인 필요)",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=곱셈 구구단 보드 암기 99단 숫자 룰렛 판",
+"age": "초등 학습용, 종이나 플라스틱 판이라 작은 부품 유무는 상품 설명 확인",
+"why": "룰렛을 돌려 나온 두 숫자를 곱하는 방식이라 구구단을 게임처럼 외우고, 맞히면 점수를 내며 가족과 겨룰 수 있어요.",
+"lane": "돌림판공부",
+"search": "https://search.shopping.naver.com/search/all?query=%EA%B3%B1%EC%85%88%20%EA%B5%AC%EA%B5%AC%EB%8B%A8%20%EB%B3%B4%EB%93%9C%20%EC%95%94%EA%B8%B0%2099%EB%8B%A8%20%EC%88%AB%EC%9E%90%20%EB%A3%B0%EB%A0%9B%20%ED%8C%90",
+"short": "곱셈 구구단 보드 암기 99단 숫자…",
+"pshort": "10,000원~"
+},
+{
+"name": "룰렛 주사위 피젯스피너 메탈 (키덜트 피젯토이)",
+"combo": "스피너 + 룰렛 + 주사위",
+"count": 3,
+"price": "약 26,000~30,000원",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=룰렛 주사위 피젯스피너 메탈",
+"age": "키덜트용 금속 제품이라 연령 표기가 없을 수 있음. 금속 모서리와 작은 부품이 있어 보호자가 상품 설명 확인 후 구매, 일부 판매처는 해외배송이니 국내배송 표시 확인",
+"why": "손으로 돌리다가 룰렛 칸에 멈추게 하고 주사위도 굴려서 숫자 게임을 할 수 있어 스피너 하나로 세 가지 재미가 나요.",
+"lane": "돌림판공부",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%A3%B0%EB%A0%9B%20%EC%A3%BC%EC%82%AC%EC%9C%84%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%A9%94%ED%83%88",
+"short": "룰렛 주사위 피젯스피너 메탈",
+"pshort": "26,000원~"
+},
+{
+"name": "미니 룰렛 돌림판 (학습·게임용)",
+"combo": "룰렛 돌림판 + 숫자·학습 놀이 + 순서·벌칙 정하기",
+"count": 3,
+"price": "약 10,000~19,100원",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=미니 룰렛 돌림판",
+"age": "어린이·초등·유치원 대상으로 표기된 상품이 많음, 자석 다트나 작은 부품이 딸린 구성은 확인 후 선택",
+"why": "책상 위에 놓고 숫자를 돌려서 덧셈·곱셈 문제를 내거나, 오늘의 순서와 벌칙을 정하는 놀이를 할 수 있어요.",
+"lane": "돌림판공부",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%AF%B8%EB%8B%88%20%EB%A3%B0%EB%A0%9B%20%EB%8F%8C%EB%A6%BC%ED%8C%90",
+"short": "미니 룰렛 돌림판",
+"pshort": "10,000원~"
+},
+{
+"name": "알파벳 주사위 룰렛 보드게임 (주사위 6개 + 알파벳 카드 54장)",
+"combo": "룰렛 + 주사위 + 알파벳 카드 게임",
+"count": 3,
+"price": "약 10,000~20,000원 (검색 목록 기준, 상품별 확인 필요)",
+"mall": "네이버쇼핑 검색 목록 (G마켓·11번가 등)",
+"link": "https://search.shopping.naver.com/search/all?query=알파벳 주사위 보드게임 알파벳 카드 54장",
+"age": "6세 이상, 2명 이상 / 주사위가 여러 개라 작은 부품은 동생이 있으면 주의",
+"why": "주사위를 굴려 나온 알파벳으로 영어 단어를 만드는 게임이라, 영어 공부를 놀이처럼 하고 가족과 겨루기 좋아요.",
+"lane": "돌림판공부",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%95%8C%ED%8C%8C%EB%B2%B3%20%EC%A3%BC%EC%82%AC%EC%9C%84%20%EB%A3%B0%EB%A0%9B%20%EB%B3%B4%EB%93%9C%EA%B2%8C%EC%9E%84",
+"short": "알파벳 주사위 룰렛 보드게임",
+"pshort": "10,000원~"
+},
+{
+"name": "변신 스피너봇 피젯스피너 피젯 토이 팝잇 (랜덤)",
+"combo": "스피너 + 변신 로봇 + 무한 뽁뽁이(팝잇)",
+"count": 3,
+"price": "약 2,120원",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/6050436694",
+"age": "8세 이상, 변신 부품이 작아 입에 넣지 않도록 주의",
+"why": "스피너가 로봇으로 변신하고 팝잇도 눌러 볼 수 있어 한 개로 세 가지 재미가 있습니다.",
+"lane": "촉감",
+"search": "https://search.shopping.naver.com/search/all?query=%EB%B3%80%EC%8B%A0%20%EC%8A%A4%ED%94%BC%EB%84%88%EB%B4%87%20%ED%94%BC%EC%A0%AF%EC%8A%A4%ED%94%BC%EB%84%88%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4%20%ED%8C%9D%EC%9E%87",
+"short": "변신 스피너봇 피젯스피너 피젯 토이…",
+"pshort": "2,120원"
+},
+{
+"name": "조이닷 3세대 LED 피젯볼 (플랫볼 스피너)",
+"combo": "스피너 볼 + 누름 팝 + LED 조명",
+"count": 3,
+"price": "4,930~12,900원",
+"mall": "쿠팡",
+"link": "https://search.shopping.naver.com/search/all?query=조이닷%203세대%20LED%20피젯볼",
+"age": "8세 이상, 입에 넣지 않기",
+"why": "눌러서 돌리고 팝 소리도 나는 데다 불빛까지 나와서 손에서 놓기 어려운 장난감입니다.",
+"lane": "촉감",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%A1%B0%EC%9D%B4%EB%8B%B7%203%EC%84%B8%EB%8C%80%20LED%20%ED%94%BC%EC%A0%AF%EB%B3%BC",
+"short": "조이닷 3세대 LED 피젯볼",
+"pshort": "4,930원~"
+},
+{
+"name": "자동회전 스피너볼 피젯 토이 스트레스볼 (랜덤 1개)",
+"combo": "스피너 + 스트레스볼",
+"count": 2,
+"price": "약 2,600원",
+"mall": "G마켓",
+"link": "https://search.shopping.naver.com/search/all?query=자동회전 스피너볼 스트레스볼 피젯 토이",
+"age": "8세 이상, 볼 내부가 터지지 않게 세게 던지지 않기",
+"why": "공 모양을 손에 쥐고 주무르며 돌릴 수 있는 스트레스볼 겸용 스피너라 손에 꼭 쥐는 느낌이 재미있습니다.",
+"lane": "촉감",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%9E%90%EB%8F%99%ED%9A%8C%EC%A0%84%20%EC%8A%A4%ED%94%BC%EB%84%88%EB%B3%BC%20%ED%94%BC%EC%A0%AF%20%ED%86%A0%EC%9D%B4%20%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4%EB%B3%BC",
+"short": "자동회전 스피너볼 피젯 토이 스트레…",
+"pshort": "2,600원"
+},
+{
+"name": "창작용 빛 혼합 LED 자이로 스피너 만들기",
+"combo": "만들기 + 과학실험(빛 혼합) + 스피너 + LED 조명",
+"count": 4,
+"price": "3,300원 안팎",
+"mall": "다나와 비교(11번가 등)",
+"link": "https://prod.danawa.com/info/?pcode=25359782",
+"age": "8세 이상, 작은 부품과 건전지 주의",
+"why": "색깔 불빛이 섞이는 모습을 보며 만들고 돌리는 과학 놀이라 숙제 소재로도 쓸 수 있습니다.",
+"lane": "만들기과학",
+"search": "https://search.shopping.naver.com/search/all?query=%EC%B0%BD%EC%9E%91%EC%9A%A9%20%EB%B9%9B%20%ED%98%BC%ED%95%A9%20LED%20%EC%9E%90%EC%9D%B4%EB%A1%9C%20%EC%8A%A4%ED%94%BC%EB%84%88%20%EB%A7%8C%EB%93%A4%EA%B8%B0",
+"short": "창작용 빛 혼합 LED 자이로 스피…",
+"pshort": "3,300원"
+},
+{
+"name": "LED 자이로팽이 만들기 키트",
+"combo": "자이로 팽이 + LED 불빛 + 만들기 과학 키트",
+"count": 3,
+"price": "33,700원(배송비 4,000원 별도)",
+"mall": "11번가",
+"link": "https://www.11st.co.kr/products/9431796372",
+"age": "10세 적합, 작은 부품·전지 주의(어른과 함께 조립 권장)",
+"why": "직접 조립해서 불 켜지는 팽이를 만드는 과학 놀이라 완성했을 때 뿌듯함이 큽니다.",
+"lane": "만들기과학",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%EC%9E%90%EC%9D%B4%EB%A1%9C%ED%8C%BD%EC%9D%B4%20%EB%A7%8C%EB%93%A4%EA%B8%B0%20%ED%82%A4%ED%8A%B8",
+"short": "LED 자이로팽이 만들기 키트",
+"pshort": "33,700원"
+},
+{
+"name": "LED 피젯 스피너 3로브 디지털 DIY 키트",
+"combo": "직접 만들기 + 스피너 + LED 조명",
+"count": 3,
+"price": "15,650원 (무료배송)",
+"mall": "11번가",
+"link": "https://search.shopping.naver.com/search/all?query=LED%20피젯%20스피너%203로브%20디지털%20DIY%20키트",
+"age": "10세 이상 권장, 작은 부품과 건전지 주의, 보호자와 함께",
+"why": "스피너를 직접 조립해서 LED 불빛을 켜 보는 만들기라서 윤오가 과학 놀이처럼 만들어 볼 수 있습니다.",
+"lane": "만들기과학",
+"search": "https://search.shopping.naver.com/search/all?query=LED%20%ED%94%BC%EC%A0%AF%20%EC%8A%A4%ED%94%BC%EB%84%88%203%EB%A1%9C%EB%B8%8C%20%EB%94%94%EC%A7%80%ED%84%B8%20DIY%20%ED%82%A4%ED%8A%B8",
+"short": "LED 피젯 스피너 3로브 디지털 …",
+"pshort": "15,650원"
+}
+];
+
+/* ───────── 스피너 그림 생성기 (외부 사진 0장, 모두 코드로 그림) ───────── */
+const PAL = {
+  불빛:      [['#ffd43b','#f08c00','#fff3bf'],['#4dabf7','#1864ab','#d0ebff'],['#ff8787','#c92a2a','#ffe3e3'],['#a9e34b','#5c940d','#f4fce3']],
+  열쇠고리:  [['#adb5bd','#495057','#f1f3f5'],['#ffd43b','#e8590c','#fff9db'],['#74c0fc','#1971c2','#e7f5ff'],['#ffa8a8','#c92a2a','#fff5f5']],
+  펜필기:    [['#495057','#212529','#dee2e6'],['#4c6ef5','#2f3ab2','#dbe4ff'],['#20c997','#0c8599','#c3fae8'],['#f783ac','#a61e4d','#ffdeeb']],
+  큐브퍼즐:  [['#ff6b6b','#c92a2a','#ffd43b'],['#51cf66','#2b8a3e','#ffe066'],['#4dabf7','#1864ab','#ff922b'],['#9775fa','#5f3dc4','#ffd8a8']],
+  팝잇:      [['#f783ac','#a61e4d','#ffdeeb'],['#9775fa','#5f3dc4','#e5dbff'],['#38d9a9','#087f5b','#c3fae8'],['#ffc078','#d9480f','#fff4e6']],
+  자석:      [['#fa5252','#c92a2a','#4dabf7'],['#495057','#212529','#ff6b6b'],['#4c6ef5','#364fc7','#ffa94d']],
+  팽이요요:  [['#ffa94d','#d9480f','#fff4e6'],['#845ef7','#5f3dc4','#f3f0ff'],['#22b8cf','#0b7285','#e3fafc'],['#f06595','#a61e4d','#ffe3e3']],
+  날아가는것:[['#4dabf7','#1864ab','#d0ebff'],['#63e6be','#087f5b','#e6fcf5'],['#ffd43b','#e8590c','#fff9db'],['#b197fc','#5f3dc4','#f3f0ff']],
+  캐릭터:    [['#ffd43b','#e67700','#fa5252'],['#ff8cc3','#a61e4d','#fff0f6'],['#69db7c','#2f9e44','#fff9db'],['#74c0fc','#1864ab','#ffe066']],
+  촉감:      [['#99e9f2','#0b7285','#e3fafc'],['#ffc9c9','#c92a2a','#fff5f5'],['#d8f5a2','#5c940d','#f4fce3']],
+  플리퍼:    [['#495057','#1a1e23','#adb5bd'],['#2b8a3e','#15401f','#8ce99a'],['#862e9c','#4a1361','#eebefa'],['#e8590c','#7f2d05','#ffd8a8']],
+  반지팔찌:  [['#f06595','#a61e4d','#ffdeeb'],['#fab005','#8c6300','#fff3bf'],['#339af0','#13518f','#d0ebff'],['#ced4da','#5c636a','#f8f9fa']],
+  돌림판공부:[['#4c6ef5','#2b3bae','#ffe066'],['#f76707','#9c3a00','#ffe8cc'],['#0ca678','#065f46','#c3fae8']],
+  만들기과학:[['#868e96','#343a40','#ced4da'],['#f59f00','#a06100','#ffec99'],['#4dabf7','#1c5ea8','#dbe4ff']]
+};
+const SHAPES = ['round','tri','star','gear','cross','disc','hex','petal','wave','blade'];
+
+function pol(cx,cy,r,a){const t=(a-90)*Math.PI/180; return [cx+r*Math.cos(t), cy+r*Math.sin(t)];}
+function pts(arr){return arr.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');}
+
+/* 날개 몸체 */
+function body(shape,wings,R,c){
+  let s='', cx=100, cy=100;
+  const step=360/wings;
+  for(let i=0;i<wings;i++){
+    const a=i*step;
+    const [x,y]=pol(cx,cy,R*0.62,a);
+    if(shape==='round'){ s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.40).toFixed(1)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3"/>`; }
+    else if(shape==='tri'){ const p=[pol(cx,cy,R,a),pol(cx,cy,R*0.34,a-32),pol(cx,cy,R*0.34,a+32)];
+      s+=`<polygon points="${pts(p)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3" stroke-linejoin="round"/>`; }
+    else if(shape==='star'){ const p=[pol(cx,cy,R*1.02,a),pol(cx,cy,R*0.52,a+18),pol(cx,cy,R*0.30,a),pol(cx,cy,R*0.52,a-18)];
+      s+=`<polygon points="${pts(p)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="2.6" stroke-linejoin="round"/>`; }
+    else if(shape==='gear'){ s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.37).toFixed(1)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3"/>`;
+      for(let k=0;k<6;k++){ const [gx,gy]=pol(x,y,R*0.37,k*60); s+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(R*0.085).toFixed(1)}" fill="${c[1]}"/>`; } }
+    else if(shape==='cross'){ const p=[pol(cx,cy,R,a-11),pol(cx,cy,R,a+11),pol(cx,cy,R*0.26,a+30),pol(cx,cy,R*0.26,a-30)];
+      s+=`<polygon points="${pts(p)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3" stroke-linejoin="round"/>`; }
+    else if(shape==='hex'){ const p=[];for(let k=0;k<6;k++)p.push(pol(x,y,R*0.38,k*60+a));
+      s+=`<polygon points="${pts(p)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3" stroke-linejoin="round"/>`; }
+    else if(shape==='petal'){ const [ax,ay]=pol(cx,cy,R*0.30,a-40), [bx,by]=pol(cx,cy,R*0.30,a+40), [tx,ty]=pol(cx,cy,R*1.0,a);
+      s+=`<path d="M${ax.toFixed(1)},${ay.toFixed(1)} Q${tx.toFixed(1)},${ty.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)} Z" fill="${c[0]}" stroke="${c[1]}" stroke-width="3"/>`; }
+    else if(shape==='wave'){ const [ax,ay]=pol(cx,cy,R*0.33,a-26), [bx,by]=pol(cx,cy,R*0.33,a+26),
+      [m1x,m1y]=pol(cx,cy,R*1.05,a-16), [m2x,m2y]=pol(cx,cy,R*0.80,a+16);
+      s+=`<path d="M${ax.toFixed(1)},${ay.toFixed(1)} C${m1x.toFixed(1)},${m1y.toFixed(1)} ${m2x.toFixed(1)},${m2y.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)} Z" fill="${c[0]}" stroke="${c[1]}" stroke-width="3" stroke-linejoin="round"/>`; }
+    else if(shape==='blade'){ const p=[pol(cx,cy,R*1.0,a-7),pol(cx,cy,R*0.95,a+16),pol(cx,cy,R*0.28,a+24),pol(cx,cy,R*0.28,a-16)];
+      s+=`<polygon points="${pts(p)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="2.8" stroke-linejoin="round"/>`; }
+    else { s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.40).toFixed(1)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3"/>`; }
+  }
+  if(shape==='disc'){ s=`<circle cx="100" cy="100" r="${R.toFixed(1)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3.5"/>`;
+    for(let i=0;i<wings;i++){ const [x,y]=pol(100,100,R*0.60,i*step);
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.17).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="2"/>`; } }
+  return s;
+}
+
+/* 가운데 베어링 */
+function hub(R,c){
+  return `<circle cx="100" cy="100" r="${(R*0.33).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="3.2"/>`
+       + `<circle cx="100" cy="100" r="${(R*0.15).toFixed(1)}" fill="${c[1]}"/>`;
+}
+
+/* 기능별 장식 — 어느 기능이 붙었는지 그림으로 보이게 */
+function deco(lane,wings,R,c,v){
+  let s='', step=360/wings;
+  const atWing=(f)=>{for(let i=0;i<wings;i++){const a=i*step; const [x,y]=pol(100,100,R*0.62,a); s+=f(x,y,a,i);} };
+  switch(lane){
+    case '불빛':
+      atWing((x,y,a)=>{let o=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.15).toFixed(1)}" fill="#fff" opacity=".95"/>`;
+        for(let k=0;k<6;k++){const [lx,ly]=pol(x,y,R*0.24,k*60),[ex,ey]=pol(x,y,R*0.40,k*60);
+          o+=`<line x1="${lx.toFixed(1)}" y1="${ly.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="${c[2]}" stroke-width="3" stroke-linecap="round" opacity=".9"/>`;}
+        return o;});
+      break;
+    case '열쇠고리':
+      s+=`<circle cx="100" cy="${(100-R*1.30).toFixed(1)}" r="${(R*0.22).toFixed(1)}" fill="none" stroke="${c[1]}" stroke-width="5"/>`;
+      s+=`<line x1="100" y1="${(100-R*1.08).toFixed(1)}" x2="100" y2="${(100-R*0.80).toFixed(1)}" stroke="${c[1]}" stroke-width="4.5"/>`;
+      s+=`<circle cx="100" cy="${(100-R*0.74).toFixed(1)}" r="${(R*0.09).toFixed(1)}" fill="${c[1]}"/>`;
+      break;
+    case '펜필기':
+      s+=`<rect x="${(100-R*0.13).toFixed(1)}" y="${(100+R*0.52).toFixed(1)}" width="${(R*0.26).toFixed(1)}" height="${(R*0.86).toFixed(1)}" rx="${(R*0.08).toFixed(1)}" fill="${c[0]}" stroke="${c[1]}" stroke-width="3"/>`;
+      s+=`<polygon points="${pts([[100-R*0.13,100+R*1.38],[100+R*0.13,100+R*1.38],[100,100+R*1.66]])}" fill="${c[1]}"/>`;
+      break;
+    case '큐브퍼즐':
+      {const g=R*0.17, ox=100-g*1.5, oy=100-g*1.5, cs=[c[0],c[2],c[1]];
+      for(let i=0;i<3;i++)for(let j=0;j<3;j++)
+        s+=`<rect x="${(ox+g*i).toFixed(1)}" y="${(oy+g*j).toFixed(1)}" width="${(g*0.92).toFixed(1)}" height="${(g*0.92).toFixed(1)}" rx="2" fill="${cs[(i+j+v)%3]}" stroke="#fff" stroke-width="1.4"/>`;}
+      break;
+    case '팝잇':
+      atWing((x,y)=>{let o=''; for(let k=0;k<4;k++){const [bx,by]=pol(x,y,R*0.19,k*90+45);
+        o+=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(R*0.115).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="2"/>`;} return o;});
+      break;
+    case '자석':
+      atWing((x,y,a,i)=>{const t=i%2?['#fa5252','N']:['#4dabf7','S'];
+        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*0.19).toFixed(1)}" fill="${t[0]}" stroke="#fff" stroke-width="2"/>`
+             + `<text x="${x.toFixed(1)}" y="${(y+R*0.075).toFixed(1)}" font-size="${(R*0.24).toFixed(1)}" font-weight="800" fill="#fff" text-anchor="middle">${t[1]}</text>`;});
+      break;
+    case '팽이요요':
+      s+=`<path d="M100,${(100+R*0.34).toFixed(1)} q${(R*0.30).toFixed(1)},${(R*0.55).toFixed(1)} 0,${(R*1.05).toFixed(1)}" fill="none" stroke="${c[1]}" stroke-width="3.4"/>`;
+      s+=`<circle cx="100" cy="${(100+R*1.50).toFixed(1)}" r="${(R*0.17).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="3"/>`;
+      s+=`<polygon points="${pts([[100-R*0.14,100+R*0.30],[100+R*0.14,100+R*0.30],[100,100+R*0.62]])}" fill="${c[1]}"/>`;
+      break;
+    case '만들기과학':
+      {const [x0,y0]=pol(100,100,R*0.96,0);
+       s+=`<polygon points="${pts([[x0-R*0.10,y0],[x0+R*0.10,y0],[x0+R*0.05,y0-R*0.34],[x0-R*0.05,y0-R*0.34]])}" fill="${c[2]}" stroke="${c[1]}" stroke-width="2.4"/>`;
+       const [x1,y1]=pol(100,100,R*0.82,120);
+       s+=`<circle cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" r="${(R*0.17).toFixed(1)}" fill="none" stroke="${c[1]}" stroke-width="4.5" stroke-dasharray="${(R*0.5).toFixed(1)} ${(R*0.22).toFixed(1)}"/>`;
+       const [x2,y2]=pol(100,100,R*0.86,240);
+       for(let k=0;k<4;k++) s+=`<line x1="${(x2-R*0.16+k*R*0.105).toFixed(1)}" y1="${(y2-R*0.14).toFixed(1)}" x2="${(x2-R*0.16+k*R*0.105).toFixed(1)}" y2="${(y2+R*0.14).toFixed(1)}" stroke="${c[1]}" stroke-width="2.6"/>`;}
+      break;
+    case '날아가는것':
+      for(let k=0;k<3;k++){ const a0=k*120+16;
+        s+=`<path d="M${pol(100,100,R*1.14,a0)[0].toFixed(1)},${pol(100,100,R*1.14,a0)[1].toFixed(1)} A${(R*1.14).toFixed(1)},${(R*1.14).toFixed(1)} 0 0 1 ${pol(100,100,R*1.14,a0+52)[0].toFixed(1)},${pol(100,100,R*1.14,a0+52)[1].toFixed(1)}" fill="none" stroke="${c[1]}" stroke-width="3.2" stroke-linecap="round" opacity=".75"/>`; }
+      atWing((x,y,a)=>{const [tx,ty]=pol(x,y,R*0.30,a+70);
+        return `<path d="M${x.toFixed(1)},${y.toFixed(1)} Q${tx.toFixed(1)},${ty.toFixed(1)} ${pol(x,y,R*0.34,a+20)[0].toFixed(1)},${pol(x,y,R*0.34,a+20)[1].toFixed(1)} Z" fill="${c[2]}" stroke="${c[1]}" stroke-width="2"/>`;});
+      break;
+    case '캐릭터':
+      s+=`<circle cx="${(100-R*0.11).toFixed(1)}" cy="${(100-R*0.07).toFixed(1)}" r="${(R*0.055).toFixed(1)}" fill="#1b2535"/>`;
+      s+=`<circle cx="${(100+R*0.11).toFixed(1)}" cy="${(100-R*0.07).toFixed(1)}" r="${(R*0.055).toFixed(1)}" fill="#1b2535"/>`;
+      s+=`<path d="M${(100-R*0.12).toFixed(1)},${(100+R*0.09).toFixed(1)} q${(R*0.12).toFixed(1)},${(R*0.13).toFixed(1)} ${(R*0.24).toFixed(1)},0" fill="none" stroke="#1b2535" stroke-width="2.6" stroke-linecap="round"/>`;
+      atWing((x,y,a,i)=>i===0?`<path d="M${(x-R*0.19).toFixed(1)},${y.toFixed(1)} h${(R*0.38).toFixed(1)}" stroke="${c[1]}" stroke-width="3"/>`:'');
+      break;
+    case '촉감':
+      atWing((x,y,a)=>`<path d="M${x.toFixed(1)},${(y-R*0.21).toFixed(1)} q${(R*0.17).toFixed(1)},${(R*0.21).toFixed(1)} 0,${(R*0.38).toFixed(1)} q${(-R*0.17).toFixed(1)},${(-R*0.17).toFixed(1)} 0,${(-R*0.38).toFixed(1)} Z" fill="${c[2]}" stroke="${c[1]}" stroke-width="2.2" opacity=".92"/>`);
+      break;
+    case '플리퍼':
+      {const [ax,ay]=pol(100,100,R*1.24,90),[bx,by]=pol(100,100,R*1.24,270);
+       s+=`<rect x="${(ax-R*0.52).toFixed(1)}" y="${(ay-R*0.13).toFixed(1)}" width="${(R*1.04).toFixed(1)}" height="${(R*0.26).toFixed(1)}" rx="${(R*0.12).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="3"/>`;
+       s+=`<rect x="${(bx-R*0.52).toFixed(1)}" y="${(by-R*0.13).toFixed(1)}" width="${(R*1.04).toFixed(1)}" height="${(R*0.26).toFixed(1)}" rx="${(R*0.12).toFixed(1)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="3"/>`;
+       for(let k=0;k<3;k++){ s+=`<line x1="${(ax-R*0.30+k*R*0.30).toFixed(1)}" y1="${(ay-R*0.13).toFixed(1)}" x2="${(ax-R*0.30+k*R*0.30).toFixed(1)}" y2="${(ay+R*0.13).toFixed(1)}" stroke="${c[1]}" stroke-width="2"/>`;
+         s+=`<line x1="${(bx-R*0.30+k*R*0.30).toFixed(1)}" y1="${(by-R*0.13).toFixed(1)}" x2="${(bx-R*0.30+k*R*0.30).toFixed(1)}" y2="${(by+R*0.13).toFixed(1)}" stroke="${c[1]}" stroke-width="2"/>`; }}
+      break;
+    case '반지팔찌':
+      s+=`<circle cx="100" cy="100" r="${(R*1.26).toFixed(1)}" fill="none" stroke="${c[1]}" stroke-width="${(R*0.17).toFixed(1)}" opacity=".88"/>`;
+      s+=`<circle cx="100" cy="100" r="${(R*1.26).toFixed(1)}" fill="none" stroke="${c[2]}" stroke-width="${(R*0.05).toFixed(1)}"/>`;
+      break;
+    case '돌림판공부':
+      atWing((x,y,a,i)=>`<text x="${x.toFixed(1)}" y="${(y+R*0.11).toFixed(1)}" font-size="${(R*0.30).toFixed(1)}" font-weight="800" fill="${c[2]}" text-anchor="middle">${[['2','4','6','8','3','5'],['1','2','3','4','5','6'],['＋','－','×','÷','＝','％'],['가','나','다','라','마','바']][v%4][i%6]}</text>`);
+      break;
+    default: /* 기타결합 */
+      atWing((x,y,a,i)=>{const p=[pol(x,y,R*0.21,0),pol(x,y,R*0.09,36),pol(x,y,R*0.21,72),pol(x,y,R*0.09,108),pol(x,y,R*0.21,144),pol(x,y,R*0.09,180),pol(x,y,R*0.21,216),pol(x,y,R*0.09,252),pol(x,y,R*0.21,288),pol(x,y,R*0.09,324)];
+        return `<polygon points="${pts(p)}" fill="${c[2]}" stroke="${c[1]}" stroke-width="1.8"/>`;});
+  }
+  return s;
+}
+
+function spinnerSVG(it, idx, big){
+  const pal = PAL[it.lane] || PAL['기타결합'];
+  const c = pal[idx % pal.length];
+  const shape = SHAPES[(idx*3+it.lane.length) % SHAPES.length];
+  const wings = [3,3,4,5,6,3,4,6][(idx+it.lane.length) % 8];
+  const R = 52;
+  const inner = body(shape, wings, R, c) + hub(R, c);
+  const dec = deco(it.lane, wings, R, c, idx);
+  const fixed = (it.lane==='열쇠고리'||it.lane==='펜필기'||it.lane==='팽이요요'||it.lane==='반지팔찌');
+  return `<svg class="${big?'big':'thumb'}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">`
+    + (fixed ? `<g class="rotor"><g>${inner}</g></g>${dec}` : `<g class="rotor"><g>${inner}${dec}</g></g>`)
+    + `</svg>`;
+}
+
+/* ───────── 화면 ───────── */
+const LANE_LABEL = {
+  불빛:'불빛 나는 것', 열쇠고리:'가방에 다는 것', 펜필기:'볼펜·펜', 큐브퍼즐:'큐브·퍼즐',
+  팝잇:'팝잇·뽁뽁이', 자석:'자석', 팽이요요:'팽이·요요', 날아가는것:'날아가는 것',
+  캐릭터:'캐릭터', 촉감:'말랑·촉감', 플리퍼:'접이식 플리퍼', 반지팔찌:'반지·팔찌',
+  돌림판공부:'돌림판·공부', 만들기과학:'만들기·과학'
+};
+let cur = '전체';
+
+function lanes(){
+  const seen=[]; ITEMS.forEach(i=>{ if(!seen.includes(i.lane)) seen.push(i.lane); });
+  return seen;
+}
+function drawTabs(){
+  const t=document.getElementById('tabs');
+  const all=['전체'].concat(lanes());
+  t.innerHTML = all.map(l=>`<button class="tab${l===cur?' on':''}" data-l="${l}">${l==='전체'?'전체 '+ITEMS.length:(LANE_LABEL[l]||l)}</button>`).join('');
+  t.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{cur=b.dataset.l; drawTabs(); drawGrid(); window.scrollTo({top:0,behavior:'smooth'});});
+}
+function drawGrid(){
+  const g=document.getElementById('grid');
+  const list = ITEMS.map((it,i)=>({it,i})).filter(o=>cur==='전체'||o.it.lane===cur);
+  g.innerHTML = list.map(o=>`
+    <div class="card" data-i="${o.i}">
+      ${spinnerSVG(o.it, o.i, false)}
+      <p class="nm">${o.it.short}</p>
+      <p class="cb">${o.it.combo}</p>
+      <div class="row">
+        <span class="badge${o.it.count>=3?' three':''}">${o.it.count>=3?'세 가지':'두 가지'}</span>
+        <span class="pr">${o.it.pshort}</span>
+      </div>
+    </div>`).join('');
+  g.querySelectorAll('.card').forEach(c=>c.onclick=()=>open(+c.dataset.i));
+}
+function open(i){
+  const it=ITEMS[i];
+  document.getElementById('modal').innerHTML = `
+    ${spinnerSVG(it,i,true)}
+    <p class="tapmsg">그림을 누르면 돌아갑니다</p>
+    <p class="mtitle">${it.name}</p>
+    <div class="mcombo">${it.combo}</div>
+    <div class="info">
+      <div><b>가격</b><span>${it.price}</span></div>
+      <div><b>파는 곳</b><span>${it.mall}</span></div>
+      <div><b>재미</b><span>${it.why}</span></div>
+      <div><b>조심할 것</b><span>${it.age}</span></div>
+    </div>
+    ${it.link ? `<a class="buy" href="${it.link}" target="_blank" rel="noopener">사는 곳 보기 →</a>` : ''}
+    <a class="${it.link?'buy2':'buy'}" href="${it.search}" target="_blank" rel="noopener">${it.link?'값 비교하고 더 찾아보기':'사는 곳 찾아보기 →'}</a>
+    <button class="close" id="cl">닫기</button>`;
+  const back=document.getElementById('back');
+  back.classList.add('on');
+  const svg=document.querySelector('#modal svg');
+  const rotor=svg.querySelector('.rotor');
+  let on=false;
+  svg.onclick=()=>{ on=!on; rotor.classList.toggle('spin',on); rotor.classList.toggle('fast',on); };
+  document.getElementById('cl').onclick=close;
+}
+function close(){ document.getElementById('back').classList.remove('on'); }
+document.getElementById('back').onclick=e=>{ if(e.target.id==='back') close(); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+
+drawTabs(); drawGrid();
+</script>
+</body>
+</html>
